@@ -67,6 +67,27 @@ export interface Translations {
     deleteFailed: string;
   };
 
+  // Dashboard
+  dashboard: {
+    title: string;
+    welcomeBack: string;
+    welcomeMessage: string;
+    totalTasks: string;
+    completed: string;
+    inProgress: string;
+    projects: string;
+    recentTasks: string;
+    recentProjects: string;
+    noTasksYet: string;
+    noProjectsYet: string;
+    createFirstTask: string;
+    createFirstProject: string;
+    active: string;
+    urgent: string;
+    blocked: string;
+    inReview: string;
+  };
+
   // Tarefas
   tasks: {
     title: string;
@@ -156,6 +177,26 @@ export const translations: Record<Language, Translations> = {
       emailAlreadyExists: 'E-mail já está em uso',
       passwordsDoNotMatch: 'As senhas não coincidem',
       fieldRequired: 'Este campo é obrigatório',
+    },
+
+    dashboard: {
+      title: 'Painel',
+      welcomeBack: 'Bem-vindo de volta',
+      welcomeMessage: 'Aqui está o que está acontecendo com seus projetos e tarefas hoje.',
+      totalTasks: 'Total de Tarefas',
+      completed: 'Concluídas',
+      inProgress: 'Em Progresso',
+      projects: 'Projetos',
+      recentTasks: 'Tarefas Recentes',
+      recentProjects: 'Projetos Recentes',
+      noTasksYet: 'Nenhuma tarefa ainda. Crie sua primeira tarefa!',
+      noProjectsYet: 'Nenhum projeto ainda. Crie seu primeiro projeto!',
+      createFirstTask: 'Crie sua primeira tarefa!',
+      createFirstProject: 'Crie seu primeiro projeto!',
+      active: 'Ativo',
+      urgent: 'Urgente',
+      blocked: 'Bloqueado',
+      inReview: 'Em Revisão',
     },
 
     projects: {
@@ -273,6 +314,26 @@ export const translations: Record<Language, Translations> = {
       emailAlreadyExists: 'Email already exists',
       passwordsDoNotMatch: 'Passwords do not match',
       fieldRequired: 'This field is required',
+    },
+
+    dashboard: {
+      title: 'Dashboard',
+      welcomeBack: 'Welcome back',
+      welcomeMessage: "Here's what's happening with your projects and tasks today.",
+      totalTasks: 'Total Tasks',
+      completed: 'Completed',
+      inProgress: 'In Progress',
+      projects: 'Projects',
+      recentTasks: 'Recent Tasks',
+      recentProjects: 'Recent Projects',
+      noTasksYet: 'No tasks yet. Create your first task!',
+      noProjectsYet: 'No projects yet. Create your first project!',
+      createFirstTask: 'Create your first task!',
+      createFirstProject: 'Create your first project!',
+      active: 'Active',
+      urgent: 'Urgent',
+      blocked: 'Blocked',
+      inReview: 'In Review',
     },
 
     projects: {

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { projectService } from '../services/projects';
@@ -9,7 +8,6 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import type { ProjectCreate } from '../types/api';
 
 export const Projects: React.FC = () => {
-  const { user } = useAuth();
   const { showToast } = useToast();
   const { t } = useLanguage();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);

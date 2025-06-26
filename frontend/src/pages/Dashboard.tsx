@@ -1,26 +1,14 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { useToast } from '../contexts/ToastContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { taskService } from '../services/tasks';
 import { projectService } from '../services/projects';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 export const Dashboard: React.FC = () => {
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
-  const { showToast } = useToast();
+  const { user } = useAuth();
   const { t } = useLanguage();
-
-  const handleLogout = () => {
-    console.log('Dashboard: Logout button clicked');
-    logout();
-    console.log('Dashboard: Logout completed, redirecting to login');
-    showToast(t.auth.logoutSuccess, 'success');
-    navigate('/login', { replace: true });
-  };
 
   const { data: tasks, isLoading: tasksLoading } = useQuery({
     queryKey: ['tasks', { skip: 0, limit: 5 }],
@@ -49,6 +37,23 @@ export const Dashboard: React.FC = () => {
     }
   };
 
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'todo':
+        return t.tasks.todo;
+      case 'in_progress':
+        return t.tasks.inProgress;
+      case 'in_review':
+        return t.dashboard.inReview;
+      case 'done':
+        return t.tasks.done;
+      case 'blocked':
+        return t.dashboard.blocked;
+      default:
+        return status;
+    }
+  };
+
   const getPriorityBadgeColor = (priority: string) => {
     switch (priority) {
       case 'low':
@@ -64,6 +69,21 @@ export const Dashboard: React.FC = () => {
     }
   };
 
+  const getPriorityLabel = (priority: string) => {
+    switch (priority) {
+      case 'low':
+        return t.tasks.low;
+      case 'medium':
+        return t.tasks.medium;
+      case 'high':
+        return t.tasks.high;
+      case 'urgent':
+        return t.dashboard.urgent;
+      default:
+        return priority;
+    }
+  };
+
   if (tasksLoading || projectsLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -74,27 +94,13 @@ export const Dashboard: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header with Logout */}
-      <div className="bg-white shadow rounded-lg p-4 flex justify-between items-center">
-        <div>
-          <h1 className="text-xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-sm text-gray-600">Welcome, {user?.full_name || user?.username}!</p>
-        </div>
-        <button
-          onClick={handleLogout}
-          className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-        >
-          Logout
-        </button>
-      </div>
-
       {/* Welcome Header */}
       <div className="bg-white shadow rounded-lg p-6">
-        <h1 className="text-2xl font-bold text-gray-900">
-          Welcome back, {user?.full_name || user?.username}!
+        <h1 className="text-3xl font-bold text-gray-900">
+          {t.dashboard.welcomeBack}, {user?.full_name || user?.username}!
         </h1>
         <p className="text-gray-600 mt-2">
-          Here's what's happening with your projects and tasks today.
+          {t.dashboard.welcomeMessage}
         </p>
       </div>
 
@@ -112,7 +118,7 @@ export const Dashboard: React.FC = () => {
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">Total Tasks</dt>
+                  <dt className="text-sm font-medium text-gray-500 truncate">{t.dashboard.totalTasks}</dt>
                   <dd className="text-lg font-medium text-gray-900">{tasks?.total || 0}</dd>
                 </dl>
               </div>
@@ -132,7 +138,7 @@ export const Dashboard: React.FC = () => {
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">Completed</dt>
+                  <dt className="text-sm font-medium text-gray-500 truncate">{t.dashboard.completed}</dt>
                   <dd className="text-lg font-medium text-gray-900">
                     {tasks?.items.filter(task => task.status === 'done').length || 0}
                   </dd>
@@ -154,7 +160,7 @@ export const Dashboard: React.FC = () => {
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">In Progress</dt>
+                  <dt className="text-sm font-medium text-gray-500 truncate">{t.dashboard.inProgress}</dt>
                   <dd className="text-lg font-medium text-gray-900">
                     {tasks?.items.filter(task => task.status === 'in_progress').length || 0}
                   </dd>
@@ -176,7 +182,7 @@ export const Dashboard: React.FC = () => {
               </div>
               <div className="ml-5 w-0 flex-1">
                 <dl>
-                  <dt className="text-sm font-medium text-gray-500 truncate">Projects</dt>
+                  <dt className="text-sm font-medium text-gray-500 truncate">{t.dashboard.projects}</dt>
                   <dd className="text-lg font-medium text-gray-900">{projects?.total || 0}</dd>
                 </dl>
               </div>
@@ -190,11 +196,11 @@ export const Dashboard: React.FC = () => {
         {/* Recent Tasks */}
         <div className="bg-white shadow rounded-lg">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-medium text-gray-900">Recent Tasks</h3>
+            <h3 className="text-lg font-medium text-gray-900">{t.dashboard.recentTasks}</h3>
           </div>
           <div className="p-6">
             {tasks?.items.length === 0 ? (
-              <p className="text-gray-500 text-center py-4">No tasks yet. Create your first task!</p>
+              <p className="text-gray-500 text-center py-4">{t.dashboard.noTasksYet}</p>
             ) : (
               <div className="space-y-4">
                 {tasks?.items.slice(0, 5).map((task) => (
@@ -205,10 +211,10 @@ export const Dashboard: React.FC = () => {
                     </div>
                     <div className="flex space-x-2">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeColor(task.status)}`}>
-                        {task.status.replace('_', ' ')}
+                        {getStatusLabel(task.status)}
                       </span>
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPriorityBadgeColor(task.priority)}`}>
-                        {task.priority}
+                        {getPriorityLabel(task.priority)}
                       </span>
                     </div>
                   </div>
@@ -221,11 +227,11 @@ export const Dashboard: React.FC = () => {
         {/* Recent Projects */}
         <div className="bg-white shadow rounded-lg">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-medium text-gray-900">Recent Projects</h3>
+            <h3 className="text-lg font-medium text-gray-900">{t.dashboard.recentProjects}</h3>
           </div>
           <div className="p-6">
             {projects?.items.length === 0 ? (
-              <p className="text-gray-500 text-center py-4">No projects yet. Create your first project!</p>
+              <p className="text-gray-500 text-center py-4">{t.dashboard.noProjectsYet}</p>
             ) : (
               <div className="space-y-4">
                 {projects?.items.slice(0, 5).map((project) => (
@@ -236,7 +242,7 @@ export const Dashboard: React.FC = () => {
                     </div>
                     <div className="flex space-x-2">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800`}>
-                        Active
+                        {t.dashboard.active}
                       </span>
                     </div>
                   </div>
