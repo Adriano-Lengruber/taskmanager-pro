@@ -3,8 +3,11 @@ CRUD operations for TaskManager Pro
 """
 from sqlalchemy.orm import Session
 from typing import Optional, List
-from app.models.database import User, Project, Task
-from app.models.schemas import UserCreate, UserUpdate, ProjectCreate, ProjectUpdate, TaskCreate, TaskUpdate
+from app.models.database import User, Project, Task, ProjectMember
+from app.models.schemas import (
+    UserCreate, UserUpdate, ProjectCreate, ProjectUpdate, TaskCreate, TaskUpdate,
+    ProjectMemberCreate, ProjectMemberUpdate
+)
 from app.auth import get_password_hash, verify_password
 
 class UserCRUD:
@@ -168,3 +171,78 @@ class TaskCRUD:
             db.commit()
             db.refresh(db_task)
         return db_task
+
+class ProjectMemberCRUD:
+    """Project Member CRUD operations"""
+    
+    @staticmethod
+    def add_member_to_project(db: Session, project_id: int, member_data: ProjectMemberCreate) -> ProjectMember:
+        """Add a member to a project"""
+        db_member = ProjectMember(
+            project_id=project_id,
+            user_id=member_data.user_id,
+            role=member_data.role
+        )
+        db.add(db_member)
+        db.commit()
+        db.refresh(db_member)
+        return db_member
+    
+    @staticmethod
+    def get_project_members(db: Session, project_id: int) -> List[ProjectMember]:
+        """Get all members of a project"""
+        return db.query(ProjectMember).filter(
+            ProjectMember.project_id == project_id,
+            ProjectMember.is_active == True
+        ).all()
+    
+    @staticmethod
+    def get_member_by_project_and_user(db: Session, project_id: int, user_id: int) -> Optional[ProjectMember]:
+        """Get specific member in a project"""
+        return db.query(ProjectMember).filter(
+            ProjectMember.project_id == project_id,
+            ProjectMember.user_id == user_id,
+            ProjectMember.is_active == True
+        ).first()
+    
+    @staticmethod
+    def update_member_role(db: Session, member_id: int, member_update: ProjectMemberUpdate) -> Optional[ProjectMember]:
+        """Update member role or status"""
+        db_member = db.query(ProjectMember).filter(ProjectMember.id == member_id).first()
+        if db_member:
+            update_data = member_update.dict(exclude_unset=True)
+            for field, value in update_data.items():
+                setattr(db_member, field, value)
+            db.commit()
+            db.refresh(db_member)
+        return db_member
+    
+    @staticmethod
+    def remove_member_from_project(db: Session, project_id: int, user_id: int) -> bool:
+        """Remove a member from a project (soft delete)"""
+        db_member = ProjectMemberCRUD.get_member_by_project_and_user(db, project_id, user_id)
+        if db_member:
+            db_member.is_active = False
+            db.commit()
+            return True
+        return False
+    
+    @staticmethod
+    def get_user_projects(db: Session, user_id: int) -> List[ProjectMember]:
+        """Get all projects where user is a member"""
+        return db.query(ProjectMember).filter(
+            ProjectMember.user_id == user_id,
+            ProjectMember.is_active == True
+        ).all()
+    
+    @staticmethod
+    def check_user_permission(db: Session, project_id: int, user_id: int, required_roles: List[str] = None) -> bool:
+        """Check if user has permission in project"""
+        member = ProjectMemberCRUD.get_member_by_project_and_user(db, project_id, user_id)
+        if not member:
+            return False
+        
+        if required_roles is None:
+            return True
+            
+        return member.role.value in required_roles

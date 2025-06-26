@@ -25,6 +25,12 @@ class TaskPriority(str, Enum):
     HIGH = "high"
     URGENT = "urgent"
 
+class ProjectRole(str, Enum):
+    OWNER = "OWNER"
+    ADMIN = "ADMIN"
+    MEMBER = "MEMBER"
+    VIEWER = "VIEWER"
+
 # User Schemas
 class UserBase(BaseModel):
     username: str = Field(..., min_length=3, max_length=50)
@@ -109,6 +115,41 @@ class TaskResponse(TaskBase):
     
     class Config:
         from_attributes = True
+
+# Project Member Schemas
+class ProjectMemberBase(BaseModel):
+    user_id: int
+    role: ProjectRole = ProjectRole.MEMBER
+
+class ProjectMemberCreate(ProjectMemberBase):
+    pass
+
+class ProjectMemberUpdate(BaseModel):
+    role: Optional[ProjectRole] = None
+    is_active: Optional[bool] = None
+
+class ProjectMemberInDB(ProjectMemberBase):
+    id: int
+    project_id: int
+    joined_at: datetime
+    is_active: bool
+    
+    class Config:
+        from_attributes = True
+
+class ProjectMember(ProjectMemberInDB):
+    user: Optional[UserResponse] = None
+
+class ProjectMemberWithUser(ProjectMemberInDB):
+    user: UserResponse
+
+# Updated Project Response with members
+class ProjectWithMembers(ProjectResponse):
+    members: List[ProjectMemberWithUser] = []
+
+# Updated User Response with project memberships
+class UserWithProjects(UserResponse):
+    project_memberships: List[ProjectMember] = []
 
 # API Response Schemas
 class APIResponse(BaseModel):
