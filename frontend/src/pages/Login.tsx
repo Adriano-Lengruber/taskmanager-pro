@@ -48,10 +48,12 @@ const Login: React.FC = () => {
       console.error('Login: Error occurred:', err);
       
       // Tratar diferentes tipos de erro
-      let errorMessage = t.auth.invalidCredentials;
+      let errorMessage = 'Erro de conexão. Verifique sua conexão com a internet.';
       
       try {
-        if (err.response?.data?.detail) {
+        if (err.response?.status === 401) {
+          errorMessage = 'Email ou senha incorretos. Verifique suas credenciais e tente novamente.';
+        } else if (err.response?.data?.detail) {
           errorMessage = err.response.data.detail;
         } else if (err.message) {
           errorMessage = err.message;
@@ -62,7 +64,8 @@ const Login: React.FC = () => {
       }
       
       setError(errorMessage);
-      showToast(errorMessage, 'error');
+      // Toast de erro com duração maior para login
+      showToast(errorMessage, 'error', 10000); // 10 segundos para erros de login
     } finally {
       setIsLoading(false);
     }

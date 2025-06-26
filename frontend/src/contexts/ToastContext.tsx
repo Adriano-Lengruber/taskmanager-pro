@@ -28,22 +28,31 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
 
   const showToast = useCallback((message: string, type: ToastType, duration?: number) => {
     const id = Math.random().toString(36).substr(2, 9);
+    
+    // Duração padrão baseada no tipo
+    let defaultDuration = 5000; // 5 segundos padrão
+    if (type === 'error') {
+      defaultDuration = 8000; // 8 segundos para erros
+    } else if (type === 'success') {
+      defaultDuration = 4000; // 4 segundos para sucessos
+    }
+    
     const newToast: ToastNotification = {
       id,
       message,
       type,
-      duration
+      duration: duration !== undefined ? duration : defaultDuration
     };
 
-    console.log(`Toast: [${type.toUpperCase()}] ${message}`);
+    console.log(`Toast: [${type.toUpperCase()}] ${message} - Duration: ${newToast.duration}ms`);
     
     setToasts(prev => [...prev, newToast]);
 
     // Auto remove after duration
-    if (duration !== 0) {
+    if (newToast.duration !== 0) {
       setTimeout(() => {
         removeToast(id);
-      }, duration || 5000);
+      }, newToast.duration);
     }
   }, [removeToast]);
 
@@ -75,16 +84,24 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     <ToastContext.Provider value={value}>
       {children}
       {/* Render toasts */}
-      <div className="fixed top-0 right-0 z-50 p-4 space-y-2">
-        {toasts.map((toast) => (
-          <Toast
+      <div className="fixed top-4 right-4 z-[9999] space-y-3">
+        {toasts.map((toast, index) => (
+          <div
             key={toast.id}
-            message={toast.message}
-            type={toast.type}
-            isVisible={true}
-            onClose={() => removeToast(toast.id)}
-            duration={0} // Controlled by the provider
-          />
+            className="transform transition-all duration-500 ease-in-out"
+            style={{ 
+              transform: `translateY(${index * 80}px)`,
+              zIndex: 9999 - index 
+            }}
+          >
+            <Toast
+              message={toast.message}
+              type={toast.type}
+              isVisible={true}
+              onClose={() => removeToast(toast.id)}
+              duration={0} // Controlled by the provider
+            />
+          </div>
         ))}
       </div>
     </ToastContext.Provider>
