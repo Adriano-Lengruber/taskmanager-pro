@@ -35,5 +35,10 @@ export const projectService = {
   async updateProject(id: number, projectData: ProjectUpdate): Promise<Project> {
     const response = await apiClient.put<Project>(`/api/v1/projects/${id}`, projectData);
     return response.data;
+  },
+
+  // Delete project
+  async deleteProject(id: number): Promise<void> {
+    await apiClient.delete(`/api/v1/projects/${id}`);
   }
 };

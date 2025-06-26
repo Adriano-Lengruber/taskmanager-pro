@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import { useToast } from '../contexts/ToastContext';
 import { projectService } from '../services/projects';
 import LoadingSpinner from '../components/LoadingSpinner';
 import type { ProjectCreate } from '../types/api';
 
 export const Projects: React.FC = () => {
+  const { user } = useAuth();
+  const { showToast } = useToast();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [formData, setFormData] = useState<ProjectCreate>({
     name: '',
@@ -23,16 +27,37 @@ export const Projects: React.FC = () => {
 
   const createMutation = useMutation({
     mutationFn: projectService.createProject,
-    onSuccess: () => {
+    onSuccess: (newProject) => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
       setIsCreateModalOpen(false);
       setFormData({ name: '', description: '', key: '' });
       setError('');
+      showToast(`Project "${newProject.name}" created successfully!`, 'success');
     },
     onError: (error: any) => {
-      setError(error.response?.data?.detail || 'Failed to create project');
+      const errorMessage = error.response?.data?.detail || 'Failed to create project';
+      setError(errorMessage);
+      showToast(`Failed to create project: ${errorMessage}`, 'error');
     }
   });
+
+  const deleteMutation = useMutation({
+    mutationFn: projectService.deleteProject,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      showToast('Project deleted successfully!', 'success');
+    },
+    onError: (error: any) => {
+      const errorMessage = error.response?.data?.detail || 'Failed to delete project';
+      showToast(`Failed to delete project: ${errorMessage}`, 'error');
+    }
+  });
+
+  const handleDeleteProject = (projectId: number, projectName: string) => {
+    if (window.confirm(`Are you sure you want to delete "${projectName}"? This action cannot be undone.`)) {
+      deleteMutation.mutate(projectId);
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -118,18 +143,41 @@ export const Projects: React.FC = () => {
                     <p className="text-sm text-gray-500">{project.description}</p>
                   </div>
                 )}
-                <div className="mt-4 flex items-center justify-between">
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    project.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                  }`}>
-                    {project.is_active ? 'Active' : 'Inactive'}
-                  </span>
-                  <Link
-                    to={`/projects/${project.id}`}
-                    className="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
-                  >
-                    View Details
-                  </Link>
+                <div className="mt-4">
+                  <div className="flex items-center justify-between">
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      project.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                    }`}>
+                      {project.is_active ? 'Active' : 'Inactive'}
+                    </span>
+                    <Link
+                      to={`/projects/${project.id}`}
+                      className="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
+                    >
+                      View Details
+                    </Link>
+                  </div>
+                  <div className="mt-3 flex justify-end space-x-2">
+                    <button
+                      onClick={() => handleDeleteProject(project.id, project.name)}
+                      disabled={deleteMutation.isPending}
+                      className="inline-flex items-center px-2 py-1 border border-transparent text-xs font-medium rounded text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50"
+                    >
+                      {deleteMutation.isPending ? (
+                        <>
+                          <LoadingSpinner size="sm" />
+                          <span className="ml-1">Deleting...</span>
+                        </>
+                      ) : (
+                        <>
+                          <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                          Delete
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>

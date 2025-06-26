@@ -108,3 +108,36 @@ async def update_project(
     
     updated_project = ProjectCRUD.update_project(db, project_id, project_update)
     return updated_project
+
+@router.delete("/{project_id}")
+async def delete_project(
+    project_id: int,
+    current_user = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Delete project (owner or admin only)"""
+    project = ProjectCRUD.get_project(db, project_id)
+    if not project:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Project not found"
+        )
+    
+    # Check permissions - only owner or admin can delete
+    if project.owner_id != current_user.id and current_user.role.value != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not enough permissions to delete this project"
+        )
+    
+    # Check if project has tasks (optional protection)
+    # You might want to prevent deletion if project has tasks
+    
+    success = ProjectCRUD.delete_project(db, project_id)
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to delete project"
+        )
+    
+    return {"message": "Project deleted successfully"}

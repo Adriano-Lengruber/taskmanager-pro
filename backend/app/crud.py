@@ -118,6 +118,30 @@ class ProjectCRUD:
             db.commit()
             db.refresh(db_project)
         return db_project
+    
+    @staticmethod
+    def delete_project(db: Session, project_id: int) -> bool:
+        """Delete project (soft delete by setting is_active=False)"""
+        db_project = db.query(Project).filter(Project.id == project_id).first()
+        if db_project:
+            # Soft delete - just set is_active to False
+            db_project.is_active = False
+            db.commit()
+            return True
+        return False
+    
+    @staticmethod
+    def count_projects(db: Session) -> int:
+        """Count total projects"""
+        return db.query(Project).filter(Project.is_active == True).count()
+    
+    @staticmethod
+    def count_user_projects(db: Session, user_id: int) -> int:
+        """Count user's projects"""
+        return db.query(Project).filter(
+            Project.owner_id == user_id,
+            Project.is_active == True
+        ).count()
 
 class TaskCRUD:
     """Task CRUD operations"""
