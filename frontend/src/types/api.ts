@@ -82,17 +82,22 @@ export interface ProjectUpdate {
 // Task Types
 export type TaskStatus = 'todo' | 'in_progress' | 'in_review' | 'done' | 'blocked';
 export type TaskPriority = 'low' | 'medium' | 'high' | 'urgent';
+export type TaskType = 'task' | 'subtask' | 'checklist' | 'action_item';
 
 export interface Task {
   id: number;
   title: string;
   description?: string;
+  task_type: TaskType;
   status: TaskStatus;
   priority: TaskPriority;
   project_id: number;
   assignee_id?: number;
   parent_task_id?: number;
   due_date?: string;
+  start_date?: string;
+  estimated_hours?: number;
+  order_index: number;
   created_at: string;
   updated_at: string;
   completed_at?: string;
@@ -101,22 +106,109 @@ export interface Task {
 export interface TaskCreate {
   title: string;
   description?: string;
+  task_type?: TaskType;
   status?: TaskStatus;
   priority?: TaskPriority;
   project_id: number;
   assignee_id?: number;
   parent_task_id?: number;
   due_date?: string;
+  start_date?: string;
+  estimated_hours?: number;
+  order_index?: number;
 }
 
 export interface TaskUpdate {
   title?: string;
   description?: string;
+  task_type?: TaskType;
   status?: TaskStatus;
   priority?: TaskPriority;
   assignee_id?: number;
   due_date?: string;
+  start_date?: string;
+  estimated_hours?: number;
+  order_index?: number;
   completed_at?: string;
+}
+
+// Checklist Types
+export interface Checklist {
+  id: number;
+  title: string;
+  description?: string;
+  task_id: number;
+  order_index: number;
+  is_completed: boolean;
+  created_at: string;
+  updated_at: string;
+  completed_at?: string;
+}
+
+export interface ChecklistCreate {
+  title: string;
+  description?: string;
+  task_id: number;
+  order_index?: number;
+}
+
+export interface ChecklistUpdate {
+  title?: string;
+  description?: string;
+  order_index?: number;
+  is_completed?: boolean;
+}
+
+// Action Item Types
+export interface ActionItem {
+  id: number;
+  title: string;
+  description?: string;
+  checklist_id: number;
+  assignee_id?: number;
+  priority: TaskPriority;
+  due_date?: string;
+  order_index: number;
+  is_completed: boolean;
+  created_at: string;
+  updated_at: string;
+  completed_at?: string;
+}
+
+export interface ActionItemCreate {
+  title: string;
+  description?: string;
+  checklist_id: number;
+  assignee_id?: number;
+  priority?: TaskPriority;
+  due_date?: string;
+  order_index?: number;
+}
+
+export interface ActionItemUpdate {
+  title?: string;
+  description?: string;
+  priority?: TaskPriority;
+  assignee_id?: number;
+  due_date?: string;
+  order_index?: number;
+  is_completed?: boolean;
+}
+
+// Hierarchy Types
+export interface ChecklistWithItems extends Checklist {
+  action_items: ActionItem[];
+}
+
+export interface TaskWithHierarchy extends Task {
+  subtasks: TaskWithHierarchy[];
+  checklists: ChecklistWithItems[];
+}
+
+export interface TaskCompletion {
+  task_id: number;
+  completion_percentage: number;
+  status: TaskStatus;
 }
 
 // Filter Types

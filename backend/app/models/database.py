@@ -10,6 +10,18 @@ import enum
 
 Base = declarative_base()
 
+class TaskType(enum.Enum):
+    """Types of tasks in the hierarchy"""
+    TASK = "task"           # Main task
+    SUBTASK = "subtask"     # Subtask of a main task
+    CHECKLIST = "checklist" # Checklist item
+    ACTION_ITEM = "action_item"  # Action item within a checklist
+
+class ChecklistStatus(enum.Enum):
+    """Status for checklist items"""
+    PENDING = "pending"
+    COMPLETED = "completed"
+
 class UserRole(enum.Enum):
     """User roles in the system"""
     ADMIN = "admin"
@@ -43,7 +55,7 @@ class User(Base):
     # Relationships
     owned_projects = relationship("Project", back_populates="owner")
     assigned_tasks = relationship("Task", back_populates="assignee")
-    project_memberships = relationship("ProjectMember", back_populates="user")
+    action_items = relationship("ActionItem", back_populates="assignee")
     project_memberships = relationship("ProjectMember", back_populates="user")
 
 class Project(Base):
@@ -65,22 +77,29 @@ class Project(Base):
     members = relationship("ProjectMember", back_populates="project")
 
 class Task(Base):
-    """Task model"""
+    """Task model with hierarchical structure"""
     __tablename__ = "tasks"
     
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String(200), nullable=False, index=True)
     description = Column(Text)
+    task_type = Column(Enum(TaskType), default=TaskType.TASK)  # New field for hierarchy
     status = Column(String(20), default="todo")  # todo, in_progress, in_review, done, blocked
     priority = Column(String(20), default="medium")  # low, medium, high, urgent
     
-    # Foreign Keys
+    # Hierarchy fields
     project_id = Column(Integer, ForeignKey("projects.id"))
     assignee_id = Column(Integer, ForeignKey("users.id"))
     parent_task_id = Column(Integer, ForeignKey("tasks.id"))  # For subtasks
     
+    # Additional hierarchy metadata
+    order_index = Column(Integer, default=0)  # For ordering within parent
+    is_template = Column(Boolean, default=False)  # For template tasks
+    estimated_hours = Column(Integer)  # Time estimation
+    
     # Dates
     due_date = Column(DateTime)
+    start_date = Column(DateTime)  # For planning
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     completed_at = Column(DateTime)
@@ -89,7 +108,51 @@ class Task(Base):
     project = relationship("Project", back_populates="tasks")
     assignee = relationship("User", back_populates="assigned_tasks")
     parent_task = relationship("Task", remote_side=[id], back_populates="subtasks")
-    subtasks = relationship("Task", back_populates="parent_task")
+    subtasks = relationship("Task", back_populates="parent_task", cascade="all, delete-orphan")
+    checklists = relationship("Checklist", back_populates="task", cascade="all, delete-orphan")
+
+class Checklist(Base):
+    """Checklist model - contains multiple action items"""
+    __tablename__ = "checklists"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String(200), nullable=False)
+    description = Column(Text)
+    task_id = Column(Integer, ForeignKey("tasks.id"))
+    order_index = Column(Integer, default=0)
+    is_completed = Column(Boolean, default=False)
+    
+    # Dates
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    completed_at = Column(DateTime)
+    
+    # Relationships
+    task = relationship("Task", back_populates="checklists")
+    action_items = relationship("ActionItem", back_populates="checklist", cascade="all, delete-orphan")
+
+class ActionItem(Base):
+    """Action Item model - individual items within checklists"""
+    __tablename__ = "action_items"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String(200), nullable=False)
+    description = Column(Text)
+    checklist_id = Column(Integer, ForeignKey("checklists.id"))
+    assignee_id = Column(Integer, ForeignKey("users.id"))
+    order_index = Column(Integer, default=0)
+    is_completed = Column(Boolean, default=False)
+    priority = Column(String(20), default="medium")  # low, medium, high, urgent
+    
+    # Dates
+    due_date = Column(DateTime)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    completed_at = Column(DateTime)
+    
+    # Relationships
+    checklist = relationship("Checklist", back_populates="action_items")
+    assignee = relationship("User", back_populates="action_items")
 
 class ProjectMember(Base):
     """Project member association model"""

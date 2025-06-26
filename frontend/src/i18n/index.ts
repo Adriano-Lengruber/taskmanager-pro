@@ -88,7 +88,7 @@ export interface Translations {
     inReview: string;
   };
 
-  // Tarefas
+  // Tasks e Hierarquia
   tasks: {
     title: string;
     subtitle: string;
@@ -112,6 +112,31 @@ export interface Translations {
     todo: string;
     inProgress: string;
     done: string;
+  };
+
+  // Hierarquia de Tarefas
+  hierarchy: {
+    checklist: string;
+    checklists: string;
+    actionItem: string;
+    actionItems: string;
+    addChecklist: string;
+    addActionItem: string;
+    checklistTitle: string;
+    checklistDescription: string;
+    actionItemTitle: string;
+    actionItemDescription: string;
+    completed: string;
+    checklistMarkedComplete: string;
+    checklistMarkedIncomplete: string;
+    actionItemCreated: string;
+    createActionItemError: string;
+    toggleChecklistError: string;
+    actionItemTitleRequired: string;
+    subtasks: string;
+    addSubtask: string;
+    taskHierarchy: string;
+    completionPercentage: string;
   };
 
   // Geral
@@ -253,6 +278,30 @@ export const translations: Record<Language, Translations> = {
       done: 'Concluído',
     },
 
+    hierarchy: {
+      checklist: 'Lista de verificação',
+      checklists: 'Listas de verificação',
+      actionItem: 'Item de ação',
+      actionItems: 'Itens de ação',
+      addChecklist: 'Adicionar lista',
+      addActionItem: 'Adicionar item',
+      checklistTitle: 'Título da lista',
+      checklistDescription: 'Descrição da lista',
+      actionItemTitle: 'Título do item',
+      actionItemDescription: 'Descrição do item',
+      completed: 'concluído(s)',
+      checklistMarkedComplete: 'Lista marcada como concluída!',
+      checklistMarkedIncomplete: 'Lista desmarcada!',
+      actionItemCreated: 'Item de ação criado com sucesso!',
+      createActionItemError: 'Erro ao criar item de ação',
+      toggleChecklistError: 'Erro ao alterar status da lista',
+      actionItemTitleRequired: 'Título do item é obrigatório',
+      subtasks: 'Subtarefas',
+      addSubtask: 'Adicionar subtarefa',
+      taskHierarchy: 'Hierarquia da tarefa',
+      completionPercentage: 'Porcentagem de conclusão',
+    },
+
     common: {
       loading: 'Carregando...',
       error: 'Erro',
@@ -388,6 +437,30 @@ export const translations: Record<Language, Translations> = {
       todo: 'To do',
       inProgress: 'In progress',
       done: 'Done',
+    },
+
+    hierarchy: {
+      checklist: 'Checklist',
+      checklists: 'Checklists',
+      actionItem: 'Action item',
+      actionItems: 'Action items',
+      addChecklist: 'Add checklist',
+      addActionItem: 'Add item',
+      checklistTitle: 'Checklist title',
+      checklistDescription: 'Checklist description',
+      actionItemTitle: 'Item title',
+      actionItemDescription: 'Item description',
+      completed: 'completed',
+      checklistMarkedComplete: 'Checklist marked as complete!',
+      checklistMarkedIncomplete: 'Checklist unmarked!',
+      actionItemCreated: 'Action item created successfully!',
+      createActionItemError: 'Error creating action item',
+      toggleChecklistError: 'Error toggling checklist status',
+      actionItemTitleRequired: 'Item title is required',
+      subtasks: 'Subtasks',
+      addSubtask: 'Add subtask',
+      taskHierarchy: 'Task hierarchy',
+      completionPercentage: 'Completion percentage',
     },
 
     common: {

@@ -12,6 +12,12 @@ class UserRole(str, Enum):
     DEVELOPER = "developer"
     VIEWER = "viewer"
 
+class TaskType(str, Enum):
+    TASK = "task"
+    SUBTASK = "subtask"
+    CHECKLIST = "checklist"
+    ACTION_ITEM = "action_item"
+
 class TaskStatus(str, Enum):
     TODO = "todo"
     IN_PROGRESS = "in_progress"
@@ -86,9 +92,13 @@ class ProjectResponse(ProjectBase):
 class TaskBase(BaseModel):
     title: str = Field(..., min_length=1, max_length=200)
     description: Optional[str] = None
+    task_type: TaskType = TaskType.TASK
     status: TaskStatus = TaskStatus.TODO
     priority: TaskPriority = TaskPriority.MEDIUM
     due_date: Optional[datetime] = None
+    start_date: Optional[datetime] = None
+    estimated_hours: Optional[int] = None
+    order_index: int = 0
 
 class TaskCreate(TaskBase):
     project_id: int
@@ -98,10 +108,14 @@ class TaskCreate(TaskBase):
 class TaskUpdate(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
+    task_type: Optional[TaskType] = None
     status: Optional[TaskStatus] = None
     priority: Optional[TaskPriority] = None
     assignee_id: Optional[int] = None
     due_date: Optional[datetime] = None
+    start_date: Optional[datetime] = None
+    estimated_hours: Optional[int] = None
+    order_index: Optional[int] = None
     completed_at: Optional[datetime] = None
 
 class TaskResponse(TaskBase):
@@ -115,6 +129,77 @@ class TaskResponse(TaskBase):
     
     class Config:
         from_attributes = True
+
+# Checklist Schemas
+class ChecklistBase(BaseModel):
+    title: str = Field(..., min_length=1, max_length=200)
+    description: Optional[str] = None
+    order_index: int = 0
+
+class ChecklistCreate(ChecklistBase):
+    task_id: int
+
+class ChecklistUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    order_index: Optional[int] = None
+    is_completed: Optional[bool] = None
+
+class ChecklistResponse(ChecklistBase):
+    id: int
+    task_id: int
+    is_completed: bool
+    created_at: datetime
+    updated_at: datetime
+    completed_at: Optional[datetime] = None
+    
+    class Config:
+        from_attributes = True
+
+# Action Item Schemas
+class ActionItemBase(BaseModel):
+    title: str = Field(..., min_length=1, max_length=200)
+    description: Optional[str] = None
+    priority: TaskPriority = TaskPriority.MEDIUM
+    due_date: Optional[datetime] = None
+    order_index: int = 0
+
+class ActionItemCreate(ActionItemBase):
+    checklist_id: int
+    assignee_id: Optional[int] = None
+
+class ActionItemUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    priority: Optional[TaskPriority] = None
+    assignee_id: Optional[int] = None
+    due_date: Optional[datetime] = None
+    order_index: Optional[int] = None
+    is_completed: Optional[bool] = None
+
+class ActionItemResponse(ActionItemBase):
+    id: int
+    checklist_id: int
+    assignee_id: Optional[int] = None
+    is_completed: bool
+    created_at: datetime
+    updated_at: datetime
+    completed_at: Optional[datetime] = None
+    
+    class Config:
+        from_attributes = True
+
+# Enhanced Task Response with hierarchy
+class TaskWithHierarchy(TaskResponse):
+    subtasks: List['TaskWithHierarchy'] = []
+    checklists: List[ChecklistResponse] = []
+
+class ChecklistWithItems(ChecklistResponse):
+    action_items: List[ActionItemResponse] = []
+
+class TaskCompleteHierarchy(TaskResponse):
+    subtasks: List['TaskCompleteHierarchy'] = []
+    checklists: List[ChecklistWithItems] = []
 
 # Project Member Schemas
 class ProjectMemberBase(BaseModel):
@@ -178,3 +263,7 @@ class UserLogin(BaseModel):
 
 class UserRegister(UserCreate):
     confirm_password: str = Field(..., min_length=8)
+
+# Update forward references for recursive models
+TaskWithHierarchy.model_rebuild()
+TaskCompleteHierarchy.model_rebuild()

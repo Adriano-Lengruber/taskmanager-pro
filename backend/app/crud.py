@@ -3,10 +3,12 @@ CRUD operations for TaskManager Pro
 """
 from sqlalchemy.orm import Session
 from typing import Optional, List
-from app.models.database import User, Project, Task, ProjectMember
+from datetime import datetime
+from app.models.database import User, Project, Task, ProjectMember, Checklist, ActionItem
 from app.models.schemas import (
     UserCreate, UserUpdate, ProjectCreate, ProjectUpdate, TaskCreate, TaskUpdate,
-    ProjectMemberCreate, ProjectMemberUpdate
+    ProjectMemberCreate, ProjectMemberUpdate, ChecklistCreate, ChecklistUpdate,
+    ActionItemCreate, ActionItemUpdate
 )
 from app.auth import get_password_hash, verify_password
 
@@ -270,3 +272,188 @@ class ProjectMemberCRUD:
             return True
             
         return member.role.value in required_roles
+
+
+class ChecklistCRUD:
+    """Checklist CRUD operations"""
+    
+    @staticmethod
+    def get_checklist(db: Session, checklist_id: int) -> Optional[Checklist]:
+        """Get checklist by ID"""
+        return db.query(Checklist).filter(Checklist.id == checklist_id).first()
+    
+    @staticmethod
+    def get_task_checklists(db: Session, task_id: int) -> List[Checklist]:
+        """Get all checklists for a task"""
+        return db.query(Checklist).filter(
+            Checklist.task_id == task_id
+        ).order_by(Checklist.order_index, Checklist.created_at).all()
+    
+    @staticmethod
+    def create_checklist(db: Session, checklist: ChecklistCreate) -> Checklist:
+        """Create new checklist"""
+        db_checklist = Checklist(
+            title=checklist.title,
+            description=checklist.description,
+            task_id=checklist.task_id,
+            order_index=checklist.order_index
+        )
+        db.add(db_checklist)
+        db.commit()
+        db.refresh(db_checklist)
+        return db_checklist
+    
+    @staticmethod
+    def update_checklist(db: Session, checklist_id: int, checklist_update: ChecklistUpdate) -> Optional[Checklist]:
+        """Update checklist"""
+        db_checklist = ChecklistCRUD.get_checklist(db, checklist_id)
+        if db_checklist:
+            update_data = checklist_update.model_dump(exclude_unset=True)
+            for field, value in update_data.items():
+                setattr(db_checklist, field, value)
+            
+            # Auto-complete logic
+            if checklist_update.is_completed is not None:
+                if checklist_update.is_completed:
+                    from datetime import datetime
+                    db_checklist.completed_at = datetime.utcnow()
+                else:
+                    db_checklist.completed_at = None
+            
+            db.commit()
+            db.refresh(db_checklist)
+        return db_checklist
+    
+    @staticmethod
+    def delete_checklist(db: Session, checklist_id: int) -> bool:
+        """Delete checklist"""
+        db_checklist = ChecklistCRUD.get_checklist(db, checklist_id)
+        if db_checklist:
+            db.delete(db_checklist)
+            db.commit()
+            return True
+        return False
+
+
+class ActionItemCRUD:
+    """Action Item CRUD operations"""
+    
+    @staticmethod
+    def get_action_item(db: Session, action_item_id: int) -> Optional[ActionItem]:
+        """Get action item by ID"""
+        return db.query(ActionItem).filter(ActionItem.id == action_item_id).first()
+    
+    @staticmethod
+    def get_checklist_action_items(db: Session, checklist_id: int) -> List[ActionItem]:
+        """Get all action items for a checklist"""
+        return db.query(ActionItem).filter(
+            ActionItem.checklist_id == checklist_id
+        ).order_by(ActionItem.order_index, ActionItem.created_at).all()
+    
+    @staticmethod
+    def create_action_item(db: Session, action_item: ActionItemCreate) -> ActionItem:
+        """Create new action item"""
+        db_action_item = ActionItem(
+            title=action_item.title,
+            description=action_item.description,
+            checklist_id=action_item.checklist_id,
+            assignee_id=action_item.assignee_id,
+            priority=action_item.priority,
+            due_date=action_item.due_date,
+            order_index=action_item.order_index
+        )
+        db.add(db_action_item)
+        db.commit()
+        db.refresh(db_action_item)
+        return db_action_item
+    
+    @staticmethod
+    def update_action_item(db: Session, action_item_id: int, action_item_update: ActionItemUpdate) -> Optional[ActionItem]:
+        """Update action item"""
+        db_action_item = ActionItemCRUD.get_action_item(db, action_item_id)
+        if db_action_item:
+            update_data = action_item_update.model_dump(exclude_unset=True)
+            for field, value in update_data.items():
+                setattr(db_action_item, field, value)
+            
+            # Auto-complete logic
+            if action_item_update.is_completed is not None:
+                if action_item_update.is_completed:
+                    from datetime import datetime
+                    db_action_item.completed_at = datetime.utcnow()
+                else:
+                    db_action_item.completed_at = None
+            
+            db.commit()
+            db.refresh(db_action_item)
+        return db_action_item
+    
+    @staticmethod
+    def delete_action_item(db: Session, action_item_id: int) -> bool:
+        """Delete action item"""
+        db_action_item = ActionItemCRUD.get_action_item(db, action_item_id)
+        if db_action_item:
+            db.delete(db_action_item)
+            db.commit()
+            return True
+        return False
+    
+    @staticmethod
+    def get_user_action_items(db: Session, user_id: int, completed: Optional[bool] = None) -> List[ActionItem]:
+        """Get action items assigned to a user"""
+        query = db.query(ActionItem).filter(ActionItem.assignee_id == user_id)
+        if completed is not None:
+            query = query.filter(ActionItem.is_completed == completed)
+        return query.order_by(ActionItem.due_date, ActionItem.priority).all()
+
+
+class TaskHierarchyCRUD:
+    """Extended Task CRUD operations for hierarchy management"""
+    
+    @staticmethod
+    def get_task_with_hierarchy(db: Session, task_id: int) -> Optional[Task]:
+        """Get task with all its subtasks and checklists"""
+        from sqlalchemy.orm import joinedload
+        
+        return db.query(Task).options(
+            joinedload(Task.subtasks),
+            joinedload(Task.checklists).joinedload(Checklist.action_items)
+        ).filter(Task.id == task_id).first()
+    
+    @staticmethod
+    def get_project_task_tree(db: Session, project_id: int) -> List[Task]:
+        """Get all main tasks (no parent) for a project with their hierarchy"""
+        from sqlalchemy.orm import joinedload
+        
+        return db.query(Task).options(
+            joinedload(Task.subtasks),
+            joinedload(Task.checklists).joinedload(Checklist.action_items)
+        ).filter(
+            Task.project_id == project_id,
+            Task.parent_task_id.is_(None)
+        ).order_by(Task.order_index, Task.created_at).all()
+    
+    @staticmethod
+    def calculate_task_completion(db: Session, task_id: int) -> float:
+        """Calculate completion percentage based on subtasks and checklists"""
+        task = TaskHierarchyCRUD.get_task_with_hierarchy(db, task_id)
+        if not task:
+            return 0.0
+        
+        total_items = 0
+        completed_items = 0
+        
+        # Count subtasks
+        for subtask in task.subtasks:
+            total_items += 1
+            if subtask.status == "done":
+                completed_items += 1
+        
+        # Count checklists and action items
+        for checklist in task.checklists:
+            for action_item in checklist.action_items:
+                total_items += 1
+                if action_item.is_completed:
+                    completed_items += 1
+        
+        return (completed_items / total_items * 100) if total_items > 0 else 0.0
