@@ -1,11 +1,17 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useAuth } from '../contexts/AuthContext';
+import { useToast } from '../contexts/ToastContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { taskService } from '../services/tasks';
 import { projectService } from '../services/projects';
 import LoadingSpinner from '../components/LoadingSpinner';
 import type { TaskCreate, TaskStatus, TaskPriority } from '../types/api';
 
 export const Tasks: React.FC = () => {
+  const { user } = useAuth();
+  const { showToast } = useToast();
+  const { t } = useLanguage();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<TaskStatus | ''>('');
   const [projectFilter, setProjectFilter] = useState<number | ''>('');

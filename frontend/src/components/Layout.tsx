@@ -1,6 +1,7 @@
 import React from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import {
   HomeIcon,
   FolderIcon,
@@ -11,12 +12,13 @@ import {
 
 const Layout: React.FC = () => {
   const { user, logout } = useAuth();
+  const { t } = useLanguage();
   const location = useLocation();
 
   const navigation = [
-    { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
-    { name: 'Projects', href: '/projects', icon: FolderIcon },
-    { name: 'Tasks', href: '/tasks', icon: ClipboardDocumentListIcon },
+    { name: t.navigation.dashboard, href: '/dashboard', icon: HomeIcon },
+    { name: t.navigation.projects, href: '/projects', icon: FolderIcon },
+    { name: t.navigation.tasks, href: '/tasks', icon: ClipboardDocumentListIcon },
   ];
 
   const isActive = (href: string) => location.pathname === href;

@@ -8,6 +8,8 @@ import LoadingSpinner from './components/LoadingSpinner';
 import { RegisterComplete } from './pages/RegisterComplete';
 import { Dashboard } from './pages/Dashboard';
 import { Projects } from './pages/Projects';
+import { Tasks } from './pages/Tasks';
+import Layout from './components/Layout';
 import Login from './pages/Login';
 
 // Create React Query client
@@ -73,25 +75,18 @@ function App() {
                 } 
               />
               <Route 
-                path="/dashboard" 
+                path="/"
                 element={
                   <ProtectedRoute requireAuth={true}>
-                    <Dashboard />
+                    <Layout />
                   </ProtectedRoute>
-                } 
-              />              
-              <Route 
-                path="/projects" 
-                element={
-                  <ProtectedRoute requireAuth={true}>
-                    <Projects />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/" 
-                element={<Navigate to="/login" replace />} 
-              />
+                }
+              >
+                <Route index element={<Navigate to="/dashboard" replace />} />
+                <Route path="dashboard" element={<Dashboard />} />
+                <Route path="projects" element={<Projects />} />
+                <Route path="tasks" element={<Tasks />} />
+              </Route>
               <Route 
                 path="*" 
                 element={<Navigate to="/login" replace />} 
