@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 30
     
     # CORS
-    backend_cors_origins: list = ["http://localhost:3000", "http://localhost:8080"]
+    backend_cors_origins: list = ["*"]  # Allow all origins for debugging
     
     # External APIs
     openai_api_key: Optional[str] = None
