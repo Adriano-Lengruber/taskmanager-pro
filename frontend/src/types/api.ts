@@ -127,3 +127,33 @@ export interface TaskFilters {
   skip?: number;
   limit?: number;
 }
+
+// Project Member Types
+export type ProjectRole = 'OWNER' | 'ADMIN' | 'MEMBER' | 'VIEWER';
+
+export interface ProjectMember {
+  id: number;
+  project_id: number;
+  user_id: number;
+  role: ProjectRole;
+  joined_at: string;
+  is_active: boolean;
+  user: User;
+}
+
+export interface ProjectMemberCreate {
+  user_id: number;
+  role?: ProjectRole;
+}
+
+export interface ProjectMemberUpdate {
+  role?: ProjectRole;
+  is_active?: boolean;
+}
+
+export interface UserProject {
+  membership_id: number;
+  role: ProjectRole;
+  joined_at: string;
+  project: Project;
+}
