@@ -65,6 +65,23 @@ export const Tasks: React.FC = () => {
       taskService.updateTask(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      showToast('Tarefa atualizada com sucesso!', 'success');
+    },
+    onError: (error: any) => {
+      const errorMessage = error.response?.data?.detail || 'Falha ao atualizar tarefa';
+      showToast(`Falha ao atualizar tarefa: ${errorMessage}`, 'error');
+    }
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: taskService.deleteTask,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      showToast(t.tasks.taskDeleted, 'success');
+    },
+    onError: (error: any) => {
+      const errorMessage = error.response?.data?.detail || 'Falha ao excluir tarefa';
+      showToast(`Falha ao excluir tarefa: ${errorMessage}`, 'error');
     }
   });
 
@@ -90,6 +107,12 @@ export const Tasks: React.FC = () => {
       id: taskId,
       data: { status: newStatus }
     });
+  };
+
+  const handleDeleteTask = (taskId: number, taskTitle: string) => {
+    if (window.confirm(`Tem certeza que deseja excluir a tarefa "${taskTitle}"? Esta ação não pode ser desfeita.`)) {
+      deleteMutation.mutate(taskId);
+    }
   };
 
   const getStatusBadgeColor = (status: TaskStatus) => {
@@ -249,18 +272,32 @@ export const Tasks: React.FC = () => {
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center">
+                    <div className="flex items-center space-x-2">
                       <select
                         value={task.status}
                         onChange={(e) => handleStatusChange(task.id, e.target.value as TaskStatus)}
                         className="text-sm border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                       >
-                        <option value="todo">To Do</option>
-                        <option value="in_progress">In Progress</option>
-                        <option value="in_review">In Review</option>
-                        <option value="done">Done</option>
-                        <option value="blocked">Blocked</option>
+                        <option value="todo">{t.tasks.todo}</option>
+                        <option value="in_progress">{t.tasks.inProgress}</option>
+                        <option value="in_review">Em revisão</option>
+                        <option value="done">{t.tasks.done}</option>
+                        <option value="blocked">Bloqueada</option>
                       </select>
+                      <button
+                        onClick={() => handleDeleteTask(task.id, task.title)}
+                        disabled={deleteMutation.isPending}
+                        className="inline-flex items-center px-2 py-1 border border-transparent text-xs font-medium rounded text-red-700 bg-red-100 hover:bg-red-200 disabled:opacity-50"
+                        title="Excluir tarefa"
+                      >
+                        {deleteMutation.isPending ? (
+                          <LoadingSpinner size="sm" />
+                        ) : (
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        )}
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -276,7 +313,7 @@ export const Tasks: React.FC = () => {
           <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
             <div className="mt-3">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-medium text-gray-900">Create New Task</h3>
+                <h3 className="text-lg font-medium text-gray-900">{t.tasks.createTask}</h3>
                 <button
                   onClick={() => {
                     setIsCreateModalOpen(false);
@@ -306,7 +343,7 @@ export const Tasks: React.FC = () => {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label htmlFor="title" className="block text-sm font-medium text-gray-700">
-                    Task Title *
+                    {t.tasks.taskTitle} *
                   </label>
                   <input
                     type="text"
@@ -316,13 +353,13 @@ export const Tasks: React.FC = () => {
                     value={formData.title}
                     onChange={handleChange}
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                    placeholder="What needs to be done?"
+                    placeholder="O que precisa ser feito?"
                   />
                 </div>
 
                 <div>
                   <label htmlFor="project_id" className="block text-sm font-medium text-gray-700">
-                    Project *
+                    Projeto *
                   </label>
                   <select
                     id="project_id"
@@ -332,7 +369,7 @@ export const Tasks: React.FC = () => {
                     onChange={handleChange}
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                   >
-                    <option value="">Select a project</option>
+                    <option value="">Selecione um projeto</option>
                     {projects?.items.map((project) => (
                       <option key={project.id} value={project.id}>
                         {project.name}
@@ -344,7 +381,7 @@ export const Tasks: React.FC = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label htmlFor="status" className="block text-sm font-medium text-gray-700">
-                      Status
+                      {t.tasks.status}
                     </label>
                     <select
                       id="status"
@@ -353,17 +390,17 @@ export const Tasks: React.FC = () => {
                       onChange={handleChange}
                       className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                     >
-                      <option value="todo">To Do</option>
-                      <option value="in_progress">In Progress</option>
-                      <option value="in_review">In Review</option>
-                      <option value="done">Done</option>
-                      <option value="blocked">Blocked</option>
+                      <option value="todo">{t.tasks.todo}</option>
+                      <option value="in_progress">{t.tasks.inProgress}</option>
+                      <option value="in_review">Em revisão</option>
+                      <option value="done">{t.tasks.done}</option>
+                      <option value="blocked">Bloqueada</option>
                     </select>
                   </div>
 
                   <div>
                     <label htmlFor="priority" className="block text-sm font-medium text-gray-700">
-                      Priority
+                      {t.tasks.priority}
                     </label>
                     <select
                       id="priority"
@@ -372,17 +409,17 @@ export const Tasks: React.FC = () => {
                       onChange={handleChange}
                       className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                     >
-                      <option value="low">Low</option>
-                      <option value="medium">Medium</option>
-                      <option value="high">High</option>
-                      <option value="urgent">Urgent</option>
+                      <option value="low">{t.tasks.low}</option>
+                      <option value="medium">{t.tasks.medium}</option>
+                      <option value="high">{t.tasks.high}</option>
+                      <option value="urgent">Urgente</option>
                     </select>
                   </div>
                 </div>
 
                 <div>
                   <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-                    Description
+                    {t.tasks.taskDescription}
                   </label>
                   <textarea
                     id="description"
@@ -391,7 +428,7 @@ export const Tasks: React.FC = () => {
                     value={formData.description}
                     onChange={handleChange}
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                    placeholder="Task description..."
+                    placeholder="Descrição da tarefa..."
                   />
                 </div>
 
@@ -411,7 +448,7 @@ export const Tasks: React.FC = () => {
                     }}
                     className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
                   >
-                    Cancel
+                    {t.common.cancel}
                   </button>
                   <button
                     type="submit"
@@ -421,10 +458,10 @@ export const Tasks: React.FC = () => {
                     {createMutation.isPending ? (
                       <div className="flex items-center">
                         <LoadingSpinner size="sm" />
-                        <span className="ml-2">Creating...</span>
+                        <span className="ml-2">{t.common.loading}</span>
                       </div>
                     ) : (
-                      'Create Task'
+                      t.tasks.createTask
                     )}
                   </button>
                 </div>
