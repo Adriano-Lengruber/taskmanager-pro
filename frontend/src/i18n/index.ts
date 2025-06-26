@@ -137,6 +137,23 @@ export interface Translations {
     addSubtask: string;
     taskHierarchy: string;
     completionPercentage: string;
+    noChecklists: string;
+    noChecklistsDescription: string;
+    noActionItems: string;
+    noActionItemsDescription: string;
+    checklistCreated: string;
+    checklistUpdated: string;
+    checklistDeleted: string;
+    checklistCreateFailed: string;
+    checklistUpdateFailed: string;
+    checklistDeleteFailed: string;
+    actionItemUpdated: string;
+    actionItemDeleted: string;
+    actionItemCreateFailed: string;
+    actionItemUpdateFailed: string;
+    actionItemDeleteFailed: string;
+    deleteChecklistConfirm: string;
+    deleteActionItemConfirm: string;
   };
 
   // Geral
@@ -300,6 +317,23 @@ export const translations: Record<Language, Translations> = {
       addSubtask: 'Adicionar subtarefa',
       taskHierarchy: 'Hierarquia da tarefa',
       completionPercentage: 'Porcentagem de conclusão',
+      noChecklists: 'Nenhuma lista de verificação',
+      noChecklistsDescription: 'Comece criando uma lista para organizar as atividades.',
+      noActionItems: 'Nenhum item de ação',
+      noActionItemsDescription: 'Adicione itens de ação para detalhar as atividades.',
+      checklistCreated: 'Lista criada com sucesso!',
+      checklistUpdated: 'Lista atualizada com sucesso!',
+      checklistDeleted: 'Lista excluída com sucesso!',
+      checklistCreateFailed: 'Falha ao criar lista',
+      checklistUpdateFailed: 'Falha ao atualizar lista',
+      checklistDeleteFailed: 'Falha ao excluir lista',
+      actionItemUpdated: 'Item atualizado com sucesso!',
+      actionItemDeleted: 'Item excluído com sucesso!',
+      actionItemCreateFailed: 'Falha ao criar item',
+      actionItemUpdateFailed: 'Falha ao atualizar item',
+      actionItemDeleteFailed: 'Falha ao excluir item',
+      deleteChecklistConfirm: 'Tem certeza que deseja excluir esta lista?',
+      deleteActionItemConfirm: 'Tem certeza que deseja excluir este item?',
     },
 
     common: {
@@ -461,6 +495,23 @@ export const translations: Record<Language, Translations> = {
       addSubtask: 'Add subtask',
       taskHierarchy: 'Task hierarchy',
       completionPercentage: 'Completion percentage',
+      noChecklists: 'No checklists',
+      noChecklistsDescription: 'Start by creating a checklist to organize activities.',
+      noActionItems: 'No action items',
+      noActionItemsDescription: 'Add action items to detail the activities.',
+      checklistCreated: 'Checklist created successfully!',
+      checklistUpdated: 'Checklist updated successfully!',
+      checklistDeleted: 'Checklist deleted successfully!',
+      checklistCreateFailed: 'Failed to create checklist',
+      checklistUpdateFailed: 'Failed to update checklist',
+      checklistDeleteFailed: 'Failed to delete checklist',
+      actionItemUpdated: 'Action item updated successfully!',
+      actionItemDeleted: 'Action item deleted successfully!',
+      actionItemCreateFailed: 'Failed to create action item',
+      actionItemUpdateFailed: 'Failed to update action item',
+      actionItemDeleteFailed: 'Failed to delete action item',
+      deleteChecklistConfirm: 'Are you sure you want to delete this checklist?',
+      deleteActionItemConfirm: 'Are you sure you want to delete this action item?',
     },
 
     common: {

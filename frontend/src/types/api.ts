@@ -205,6 +205,13 @@ export interface TaskWithHierarchy extends Task {
   checklists: ChecklistWithItems[];
 }
 
+// Alias para compatibilidade
+export interface TaskCompleteHierarchy extends TaskWithHierarchy {}
+
+// Response types para API
+export interface ActionItemResponse extends ActionItem {}
+export interface ChecklistResponse extends Checklist {}
+
 export interface TaskCompletion {
   task_id: number;
   completion_percentage: number;
