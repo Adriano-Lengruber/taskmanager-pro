@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
-import { useToast } from '../contexts/ToastContext';
+import { useToast } from '../contexts/SuperStableToastContext';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { hierarchyService } from '../services/hierarchy';
 import type { 

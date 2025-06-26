@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Test - Página Isolada</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+            background-color: #f9fafb;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%;
+        }
+        h1 {
+            text-align: center;
+            color: #111827;
+            margin-bottom: 2rem;
+        }
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #374151;
+            font-weight: 500;
+        }
+        input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+        input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        button {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 0.375rem;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            margin-bottom: 1rem;
+        }
+        button:hover {
+            background-color: #2563eb;
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .test-btn {
+            background-color: #10b981;
+        }
+        .test-btn:hover {
+            background-color: #059669;
+        }
+        .error {
+            background-color: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+            padding: 0.75rem;
+            border-radius: 0.375rem;
+            margin-bottom: 1rem;
+        }
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+        .toast {
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            max-width: 300px;
+            border-left: 4px solid;
+            animation: slideIn 0.3s ease-out;
+        }
+        .toast.success { border-left-color: #10b981; }
+        .toast.error { border-left-color: #ef4444; }
+        .toast.info { border-left-color: #3b82f6; }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        @keyframes slideOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
+        }
+        
+        .toast.removing {
+            animation: slideOut 0.3s ease-in;
+        }
+        
+        .help {
+            text-align: center;
+            color: #6b7280;
+            font-size: 0.875rem;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Login Test - Página Isolada</h1>
+        <p style="text-align: center; color: #6b7280; margin-bottom: 2rem;">
+            Teste completamente isolado do React/Router
+        </p>
+        
+        <button type="button" onclick="testToast()" class="test-btn">
+            🟢 Teste de Toast
+        </button>
+        
+        <div id="error-container"></div>
+        
+        <div class="form-group">
+            <label for="username">Username:</label>
+            <input type="text" id="username" placeholder="Digite o username" value="admin">
+        </div>
+        
+        <div class="form-group">
+            <label for="password">Password:</label>
+            <input type="password" id="password" placeholder="Digite a senha" value="admin123">
+        </div>
+        
+        <button type="button" onclick="attemptLogin()" id="loginBtn">
+            🔵 Fazer Login Direto
+        </button>
+        
+        <div class="help">
+            <p>Use <strong>admin/admin123</strong> para sucesso</p>
+            <p>Use <strong>test/wrong</strong> para erro</p>
+            <p><a href="http://localhost:5173/logout-test" style="color: #3b82f6;">← Voltar ao React App</a></p>
+        </div>
+    </div>
+    
+    <div class="toast-container" id="toastContainer"></div>
+    
+    <script>
+        console.log('🧪 Página isolada carregada!');
+        
+        let toastCounter = 0;
+        
+        function showToast(message, type = 'info', duration = 5000) {
+            console.log('🧪 Toast chamado:', { message, type, duration });
+            
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            const toastId = `toast-${++toastCounter}`;
+            
+            toast.id = toastId;
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <div style="font-weight: 500; margin-bottom: 0.25rem;">${getIcon(type)} ${type.toUpperCase()}</div>
+                <div>${message}</div>
+            `;
+            
+            container.appendChild(toast);
+            console.log('🧪 Toast criado:', toastId);
+            
+            // Remove after duration
+            setTimeout(() => {
+                removeToast(toastId);
+            }, duration);
+            
+            return toastId;
+        }
+        
+        function removeToast(toastId) {
+            const toast = document.getElementById(toastId);
+            if (!toast) return;
+            
+            console.log('🧪 Removendo toast:', toastId);
+            toast.classList.add('removing');
+            
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+                console.log('🧪 Toast removido do DOM:', toastId);
+            }, 300);
+        }
+        
+        function getIcon(type) {
+            switch (type) {
+                case 'success': return '✅';
+                case 'error': return '❌';
+                case 'info': return 'ℹ️';
+                default: return '📢';
+            }
+        }
+        
+        function testToast() {
+            console.log('🧪 Botão de teste clicado!');
+            showToast('Toast funcionando na página isolada!', 'info');
+        }
+        
+        async function attemptLogin() {
+            console.log('🧪🧪🧪 ATTEMPT LOGIN EXECUTADO!');
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('loginBtn');
+            const errorContainer = document.getElementById('error-container');
+            
+            console.log('🧪🧪🧪 Dados:', { username, password });
+            
+            // Clear previous error
+            errorContainer.innerHTML = '';
+            
+            // Disable button
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Carregando...';
+            
+            try {
+                console.log('🧪🧪🧪 Fazendo requisição fetch...');
+                
+                const formData = new URLSearchParams();
+                formData.append('username', username);
+                formData.append('password', password);
+                
+                console.log('🧪🧪🧪 Form data:', formData.toString());
+                
+                const response = await fetch('http://localhost:8000/api/v1/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: formData
+                });
+                
+                console.log('🧪🧪🧪 Response status:', response.status);
+                console.log('🧪🧪🧪 Response ok:', response.ok);
+                
+                const data = await response.json();
+                console.log('🧪🧪🧪 Response data:', data);
+                
+                if (response.ok) {
+                    console.log('✅ Login bem-sucedido!');
+                    showToast('Login realizado com sucesso! 🎉', 'success', 8000);
+                } else {
+                    console.error('❌ Login falhou:', data);
+                    const errorMsg = data.detail || 'Erro desconhecido';
+                    errorContainer.innerHTML = `<div class="error">${errorMsg}</div>`;
+                    showToast(`Erro: ${errorMsg}`, 'error', 10000);
+                }
+                
+            } catch (error) {
+                console.error('🧪🧪🧪 ERRO CAPTURADO:', error);
+                const errorMsg = 'Erro de conexão com o servidor';
+                errorContainer.innerHTML = `<div class="error">${errorMsg}</div>`;
+                showToast(`Erro: ${errorMsg}`, 'error', 10000);
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.textContent = '🔵 Fazer Login Direto';
+                console.log('🧪🧪🧪 Finally executado!');
+            }
+        }
+        
+        // Test on page load
+        console.log('🧪 Página pronta para testes!');
+    </script>
+</body>
+</html>

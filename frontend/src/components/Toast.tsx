@@ -1,38 +1,23 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 
 export type ToastType = 'success' | 'error' | 'warning' | 'info';
 
 interface ToastProps {
   message: string;
   type: ToastType;
-  isVisible: boolean;
   onClose: () => void;
-  duration?: number;
 }
 
 export const Toast: React.FC<ToastProps> = ({
   message,
   type,
-  isVisible,
-  onClose,
-  duration = 5000
+  onClose
 }) => {
-  useEffect(() => {
-    if (isVisible && duration > 0) {
-      const timer = setTimeout(() => {
-        onClose();
-      }, duration);
-      return () => clearTimeout(timer);
-    }
-  }, [isVisible, duration, onClose]);
+  // Toast simplificado sem animações
 
   const getToastStyles = () => {
-    const baseStyles = 'relative max-w-sm w-full bg-white shadow-lg rounded-lg overflow-hidden border-l-4 transform transition-all duration-500 ease-in-out';
+    const baseStyles = 'relative max-w-sm w-full bg-white shadow-lg rounded-lg overflow-hidden border-l-4';
     
-    if (!isVisible) {
-      return `${baseStyles} translate-x-full opacity-0 scale-95`;
-    }
-
     const typeStyles = {
       success: 'border-green-500',
       error: 'border-red-500', 
@@ -40,7 +25,7 @@ export const Toast: React.FC<ToastProps> = ({
       info: 'border-blue-500'
     };
 
-    return `${baseStyles} translate-x-0 opacity-100 scale-100 ${typeStyles[type]}`;
+    return `${baseStyles} ${typeStyles[type]}`;
   };
 
   const getIcon = () => {

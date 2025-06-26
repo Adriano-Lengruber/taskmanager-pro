@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { useToast } from '../contexts/ToastContext';
+import { useToast } from '../contexts/SuperStableToastContext';
 
 export const RegisterComplete: React.FC = () => {
   console.log('RegisterComplete: Component is rendering');

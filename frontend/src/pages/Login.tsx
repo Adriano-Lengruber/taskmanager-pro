@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { useToast } from '../contexts/ToastContext';
+import { ultraDelayedToast } from '../utils/ultraDelayedToast';
 import { useLanguage } from '../contexts/LanguageContext';
 import LoadingSpinner from '../components/LoadingSpinner';
 import type { UserLogin } from '../types/api';
@@ -9,7 +9,6 @@ import type { UserLogin } from '../types/api';
 const Login: React.FC = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
-  const { showToast } = useToast();
   const { t } = useLanguage();
   const [formData, setFormData] = useState<UserLogin>({
     username: '',
@@ -28,6 +27,8 @@ const Login: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
+    console.log('🔥🔥🔥 LOGIN: handleSubmit iniciado com dados:', formData);
     setIsLoading(true);
     setError('');
 
@@ -37,7 +38,7 @@ const Login: React.FC = () => {
       console.log('Login: Calling login function...');
       await login(formData);
       console.log('Login: Success! Redirecting to dashboard...');
-      showToast(t.auth.loginSuccess, 'success');
+      ultraDelayedToast.success(t.auth.loginSuccess);
       
       // Redirecionamento será automático pelo ProtectedRoute
       // mas vamos garantir com navigate também
@@ -45,30 +46,60 @@ const Login: React.FC = () => {
         navigate('/dashboard');
       }, 100);
     } catch (err: any) {
-      console.error('Login: Error occurred:', err);
+      console.error('🔥🔥🔥 LOGIN: Error occurred:', err);
+      console.error('🔥🔥🔥 LOGIN: Error response:', err.response);
+      console.error('🔥🔥🔥 LOGIN: Error status:', err.response?.status);
+      console.error('🔥🔥🔥 LOGIN: Error data:', err.response?.data);
       
-      // Tratar diferentes tipos de erro
-      let errorMessage = 'Erro de conexão. Verifique sua conexão com a internet.';
-      
-      try {
+      // SOLUÇÃO: Usar setTimeout para garantir que o toast seja exibido 
+      // APÓS qualquer re-render do AuthContext
+      setTimeout(() => {
+        let errorMessage = 'Erro ao fazer login';
+        
         if (err.response?.status === 401) {
-          errorMessage = 'Email ou senha incorretos. Verifique suas credenciais e tente novamente.';
+          errorMessage = 'Credenciais inválidas. Verifique seu usuário e senha.';
+        } else if (err.response?.status === 422) {
+          errorMessage = 'Dados de login inválidos. Verifique se você preencheu todos os campos corretamente.';
+        } else if (err.response?.status === 400) {
+          errorMessage = 'Usuário inativo ou bloqueado. Entre em contato com o administrador.';
         } else if (err.response?.data?.detail) {
-          errorMessage = err.response.data.detail;
-        } else if (err.message) {
-          errorMessage = err.message;
+          if (typeof err.response.data.detail === 'string') {
+            errorMessage = err.response.data.detail;
+          } else if (Array.isArray(err.response.data.detail)) {
+            errorMessage = 'Erro nos dados fornecidos. Verifique se todos os campos estão preenchidos corretamente.';
+          }
+        } else if (err.message === 'Network Error') {
+          errorMessage = 'Não foi possível conectar ao servidor. Verifique sua conexão com a internet.';
+        } else if (err.code === 'ECONNREFUSED') {
+          errorMessage = 'Servidor temporariamente indisponível. Tente novamente em alguns instantes.';
         }
-      } catch (parseError) {
-        console.error('Login: Error parsing error message:', parseError);
-        errorMessage = 'Erro de conexão. Verifique sua conexão com a internet.';
-      }
-      
-      setError(errorMessage);
-      // Toast de erro com duração maior para login
-      showToast(errorMessage, 'error', 10000); // 10 segundos para erros de login
+        
+        console.log('🔥🔥🔥 LOGIN: Exibindo toast de erro:', errorMessage);
+        setError(errorMessage);
+        ultraDelayedToast.error(errorMessage, 15000); // 15 segundos para ter certeza
+      }, 100); // Delay pequeno para deixar o AuthContext se estabilizar
     } finally {
-      setIsLoading(false);
+      // Também usar setTimeout no finally para evitar problemas de timing
+      setTimeout(() => {
+        setIsLoading(false);
+        console.log('🔥🔥🔥 LOGIN: Loading definido como false');
+      }, 50);
     }
+  };
+
+  // Nova função para interceptar o clique do botão
+  const handleButtonClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('🔥🔥🔥 LOGIN BUTTON: Clique interceptado!', e);
+    
+    // Criar um evento sintético de form para passar para handleSubmit
+    const syntheticEvent = {
+      preventDefault: () => {},
+      stopPropagation: () => {},
+    } as React.FormEvent;
+    
+    await handleSubmit(syntheticEvent);
   };
 
   return (
@@ -83,7 +114,7 @@ const Login: React.FC = () => {
           </p>
         </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+        <div className="mt-8 space-y-6">
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg">
               {error}
@@ -134,8 +165,9 @@ const Login: React.FC = () => {
 
           <div>
             <button
-              type="submit"
+              type="button"
               disabled={isLoading}
+              onClick={handleButtonClick}
               className="
                 group relative w-full flex justify-center py-3 px-4 border border-transparent
                 text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700
@@ -162,7 +194,7 @@ const Login: React.FC = () => {
               </Link>
             </p>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );

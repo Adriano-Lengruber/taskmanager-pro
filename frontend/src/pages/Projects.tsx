@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { useToast } from '../contexts/ToastContext';
+import { useToast } from '../contexts/SuperStableToastContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { projectService } from '../services/projects';
 import LoadingSpinner from '../components/LoadingSpinner';

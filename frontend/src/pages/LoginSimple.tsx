@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuthSimple } from '../contexts/AuthContextSimple';
-import { useToast } from '../contexts/ToastContext';
+import { useToast } from '../contexts/SuperStableToastContext';
 import LoadingSpinner from '../components/LoadingSpinner';
 import type { UserLogin } from '../types/api';
 

@@ -25,8 +25,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log('AuthContext: Initializing authentication...');
       
       try {
-        if (authService.isAuthenticated()) {
-          console.log('AuthContext: Token found, verifying with server...');
+        // Primeiro, verificar se há dados de usuário já armazenados
+        const storedUser = authService.getStoredUser();
+        if (storedUser && authService.isAuthenticated()) {
+          console.log('AuthContext: Found stored user data, setting immediately');
+          setUser(storedUser);
+          setIsLoading(false); // Definir loading como false rapidamente
+          
+          // Verificar com o servidor em background
+          try {
+            console.log('AuthContext: Verifying stored user with server...');
+            const userData = await authService.getCurrentUser();
+            console.log('AuthContext: Server verification successful, updating user data');
+            setUser(userData);
+            authService.setStoredUser(userData);
+          } catch (verifyError) {
+            console.warn('AuthContext: Server verification failed, clearing stored data');
+            authService.logout();
+            setUser(null);
+          }
+        } else if (authService.isAuthenticated()) {
+          console.log('AuthContext: Token found but no stored user, verifying with server...');
           const userData = await authService.getCurrentUser();
           console.log('AuthContext: User data retrieved:', userData);
           setUser(userData);
@@ -34,15 +53,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           console.log('AuthContext: User authenticated successfully');
         } else {
           console.log('AuthContext: No token found, user not authenticated');
+          setIsLoading(false);
         }
       } catch (error) {
         console.error('AuthContext: Error during initialization:', error);
         // Token is invalid, clear stored data
         authService.logout();
         setUser(null);
-      } finally {
-        console.log('AuthContext: Initialization complete, setting loading to false');
         setIsLoading(false);
+      } finally {
+        if (isLoading) {
+          console.log('AuthContext: Initialization complete, setting loading to false');
+          setIsLoading(false);
+        }
       }
     };
 
@@ -63,7 +86,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       authService.setStoredUser(userData);
       console.log('AuthContext: Login process completed successfully');
     } catch (error) {
-      console.error('AuthContext: Login error:', error);
+      console.error('🔥🔥🔥 AuthContext: Login error caught:', error);
+      console.error('🔥🔥🔥 AuthContext: Re-throwing error to component...');
       throw error;
     } finally {
       setIsLoading(false);

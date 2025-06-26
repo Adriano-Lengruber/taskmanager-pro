@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useToast } from '../contexts/ToastContext';
+import { useToast } from '../contexts/SuperStableToastContext';
 
 export const RegisterWithToast: React.FC = () => {
   console.log('RegisterWithToast: Component is rendering');

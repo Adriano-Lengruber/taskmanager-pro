@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthSimple } from '../contexts/AuthContextSimple';
-import { useToast } from '../contexts/ToastContext';
+import { useToast } from '../contexts/SuperStableToastContext';
 
 export const LoginTest: React.FC = () => {
   const { login, logout, user, isAuthenticated, isLoading } = useAuthSimple();

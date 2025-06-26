@@ -1,11 +1,5 @@
 """
-TaskManager Pro - Main App# Include routers
-app.include_router(auth.router, prefix="/api/v1")
-app.include_router(users.router, prefix="/api/v1")
-app.include_router(projects.router, prefix="/api/v1")
-app.include_router(tasks.router, prefix="/api/v1")
-app.include_router(project_members.router, prefix="/api/v1")
-app.include_router(hierarchy.router)on Entry Point
+TaskManager Pro - Main Application Entry Point
 """
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware

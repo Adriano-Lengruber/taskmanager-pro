@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useToast } from '../contexts/ToastContext';
+import { useToast } from '../contexts/SuperStableToastContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { taskService } from '../services/tasks';
 import { projectService } from '../services/projects';

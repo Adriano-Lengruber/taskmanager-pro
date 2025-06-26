@@ -10,19 +10,38 @@ import type {
 export const authService = {
   // Login user
   async login(credentials: UserLogin): Promise<AuthToken> {
-    console.log('AuthService: Attempting login for', credentials.username);
-    const formData = new FormData();
+    console.log('🚀 AuthService: Attempting login for', credentials.username);
+    console.log('🚀 AuthService: API URL will be:', 'http://localhost:8000/api/v1/auth/login');
+    
+    // OAuth2PasswordRequestForm espera application/x-www-form-urlencoded
+    const formData = new URLSearchParams();
     formData.append('username', credentials.username);
     formData.append('password', credentials.password);
     
-    const response = await apiClient.post<AuthToken>('/api/v1/auth/login', formData, {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-    });
+    console.log('🚀 AuthService: Form data created:', formData.toString());
     
-    console.log('AuthService: Login response received', response.data);
-    return response.data;
+    try {
+      console.log('🚀 AuthService: Making request...');
+      const response = await apiClient.post<AuthToken>('/api/v1/auth/login', formData, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      });
+      
+      console.log('✅ AuthService: Login SUCCESS - response received', response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error('🔥🔥🔥 AuthService: Login ERROR caught:', error);
+      console.error('🔥🔥🔥 AuthService: Error response:', error.response);
+      console.error('🔥🔥🔥 AuthService: Error status:', error.response?.status);
+      console.error('🔥🔥🔥 AuthService: Error data:', error.response?.data);
+      console.error('🔥🔥🔥 AuthService: Error message:', error.message);
+      console.error('🔥🔥🔥 AuthService: Error config:', error.config);
+      
+      // Re-throw the error to be caught by the calling function
+      console.log('🔥🔥🔥 AuthService: Re-throwing error for upper layer to handle...');
+      throw error;
+    }
   },
 
   // Register user

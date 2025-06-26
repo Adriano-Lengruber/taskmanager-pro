@@ -7,6 +7,7 @@ interface ToastNotification {
   message: string;
   type: ToastType;
   duration?: number;
+  timestamp: number;
 }
 
 interface ToastContextType {
@@ -23,37 +24,69 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<ToastNotification[]>([]);
 
   const removeToast = useCallback((id: string) => {
-    setToasts(prev => prev.filter(toast => toast.id !== id));
+    console.log(`🗑️ REMOVE TOAST CALLED: ${id}`);
+    setToasts(prev => {
+      const newToasts = prev.filter(toast => toast.id !== id);
+      console.log(`🗑️ TOASTS AFTER REMOVAL: ${newToasts.length}`);
+      return newToasts;
+    });
   }, []);
 
   const showToast = useCallback((message: string, type: ToastType, duration?: number) => {
+    console.log(`🔥 TOAST CALL: ${type} - "${message}"`);
+    
     const id = Math.random().toString(36).substr(2, 9);
     
     // Duração padrão baseada no tipo
-    let defaultDuration = 5000; // 5 segundos padrão
-    if (type === 'error') {
-      defaultDuration = 8000; // 8 segundos para erros
-    } else if (type === 'success') {
-      defaultDuration = 4000; // 4 segundos para sucessos
+    let finalDuration = duration;
+    if (!finalDuration) {
+      switch (type) {
+        case 'error':
+          finalDuration = 8000; // 8 segundos para erros
+          break;
+        case 'success':
+          finalDuration = 4000; // 4 segundos para sucessos
+          break;
+        case 'warning':
+          finalDuration = 6000; // 6 segundos para avisos
+          break;
+        default:
+          finalDuration = 5000; // 5 segundos padrão
+      }
     }
     
     const newToast: ToastNotification = {
       id,
       message,
       type,
-      duration: duration !== undefined ? duration : defaultDuration
+      duration: finalDuration,
+      timestamp: Date.now()
     };
 
-    console.log(`Toast: [${type.toUpperCase()}] ${message} - Duration: ${newToast.duration}ms`);
+    console.log(`🔥 CREATING TOAST: ${id} - Duration: ${finalDuration}ms`);
     
-    setToasts(prev => [...prev, newToast]);
+    // Adicionar o toast
+    setToasts(prev => {
+      // Evitar toasts duplicados nos últimos 1 segundo (mais agressivo)
+      const now = Date.now();
+      const exists = prev.find(t => 
+        t.message === message && 
+        t.type === type && 
+        (now - t.timestamp) < 1000
+      );
+      if (exists) {
+        console.log('🚫 DUPLICATE PREVENTED');
+        return prev;
+      }
+      console.log(`🔥 ADDING TOAST: ${id}`);
+      return [...prev, newToast];
+    });
 
-    // Auto remove after duration
-    if (newToast.duration !== 0) {
-      setTimeout(() => {
-        removeToast(id);
-      }, newToast.duration);
-    }
+    // Programar remoção
+    setTimeout(() => {
+      console.log(`🗑️ REMOVING TOAST: ${id} after ${finalDuration}ms`);
+      removeToast(id);
+    }, finalDuration);
   }, [removeToast]);
 
   const showSuccess = useCallback((message: string, duration?: number) => {
@@ -83,25 +116,15 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   return (
     <ToastContext.Provider value={value}>
       {children}
-      {/* Render toasts */}
-      <div className="fixed top-4 right-4 z-[9999] space-y-3">
-        {toasts.map((toast, index) => (
-          <div
+      {/* Render toasts - versão ultra simplificada */}
+      <div className="fixed top-4 right-4 z-[9999] space-y-2">
+        {toasts.map((toast) => (
+          <Toast
             key={toast.id}
-            className="transform transition-all duration-500 ease-in-out"
-            style={{ 
-              transform: `translateY(${index * 80}px)`,
-              zIndex: 9999 - index 
-            }}
-          >
-            <Toast
-              message={toast.message}
-              type={toast.type}
-              isVisible={true}
-              onClose={() => removeToast(toast.id)}
-              duration={0} // Controlled by the provider
-            />
-          </div>
+            message={toast.message}
+            type={toast.type}
+            onClose={() => removeToast(toast.id)}
+          />
         ))}
       </div>
     </ToastContext.Provider>
