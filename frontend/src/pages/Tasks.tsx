@@ -137,14 +137,14 @@ export const Tasks: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Tasks</h1>
-          <p className="text-gray-600 mt-1">Manage and track your tasks</p>
+          <h1 className="text-2xl font-bold text-gray-900">{t.tasks.title}</h1>
+          <p className="text-gray-600 mt-1">{t.tasks.subtitle}</p>
         </div>
         <button
           onClick={() => setIsCreateModalOpen(true)}
           className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium"
         >
-          Create Task
+          {t.tasks.createTask}
         </button>
       </div>
 
@@ -153,7 +153,7 @@ export const Tasks: React.FC = () => {
         <div className="flex flex-wrap gap-4">
           <div>
             <label htmlFor="statusFilter" className="block text-sm font-medium text-gray-700 mb-1">
-              Status
+              {t.tasks.status}
             </label>
             <select
               id="statusFilter"
@@ -161,17 +161,17 @@ export const Tasks: React.FC = () => {
               onChange={(e) => setStatusFilter(e.target.value as TaskStatus | '')}
               className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             >
-              <option value="">All Statuses</option>
-              <option value="todo">To Do</option>
-              <option value="in_progress">In Progress</option>
-              <option value="in_review">In Review</option>
-              <option value="done">Done</option>
-              <option value="blocked">Blocked</option>
+              <option value="">Todos os status</option>
+              <option value="todo">{t.tasks.todo}</option>
+              <option value="in_progress">{t.tasks.inProgress}</option>
+              <option value="in_review">Em revisão</option>
+              <option value="done">{t.tasks.done}</option>
+              <option value="blocked">Bloqueada</option>
             </select>
           </div>
           <div>
             <label htmlFor="projectFilter" className="block text-sm font-medium text-gray-700 mb-1">
-              Project
+              Projeto
             </label>
             <select
               id="projectFilter"
@@ -179,7 +179,7 @@ export const Tasks: React.FC = () => {
               onChange={(e) => setProjectFilter(e.target.value ? parseInt(e.target.value) : '')}
               className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             >
-              <option value="">All Projects</option>
+              <option value="">Todos os projetos</option>
               {projects?.items.map((project) => (
                 <option key={project.id} value={project.id}>
                   {project.name}
@@ -196,8 +196,8 @@ export const Tasks: React.FC = () => {
           <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
           </svg>
-          <h3 className="mt-2 text-sm font-medium text-gray-900">No tasks</h3>
-          <p className="mt-1 text-sm text-gray-500">Get started by creating a new task.</p>
+          <h3 className="mt-2 text-sm font-medium text-gray-900">{t.tasks.noTasks}</h3>
+          <p className="mt-1 text-sm text-gray-500">{t.tasks.noTasksDescription}</p>
           <div className="mt-6">
             <button
               onClick={() => setIsCreateModalOpen(true)}
