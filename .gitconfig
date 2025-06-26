@@ -1,0 +1,7 @@
+[user]
+    name = Adriano-Lengruber
+    email = adrianolengruber@hotmail.com
+[init]
+    defaultBranch = main
+[core]
+    autocrlf = true
