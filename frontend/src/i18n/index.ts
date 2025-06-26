@@ -111,6 +111,8 @@ export interface Translations {
     low: string;
     todo: string;
     inProgress: string;
+    inReview: string;
+    blocked: string;
     done: string;
   };
 
@@ -154,6 +156,9 @@ export interface Translations {
     actionItemDeleteFailed: string;
     deleteChecklistConfirm: string;
     deleteActionItemConfirm: string;
+    hierarchy: string;
+    viewHierarchy: string;
+    hierarchyUpdated: string;
   };
 
   // Geral
@@ -292,6 +297,8 @@ export const translations: Record<Language, Translations> = {
       low: 'Baixa',
       todo: 'A fazer',
       inProgress: 'Em progresso',
+      inReview: 'Em revisão',
+      blocked: 'Bloqueada',
       done: 'Concluído',
     },
 
@@ -334,6 +341,9 @@ export const translations: Record<Language, Translations> = {
       actionItemDeleteFailed: 'Falha ao excluir item',
       deleteChecklistConfirm: 'Tem certeza que deseja excluir esta lista?',
       deleteActionItemConfirm: 'Tem certeza que deseja excluir este item?',
+      hierarchy: 'Hierarquia',
+      viewHierarchy: 'Ver hierarquia',
+      hierarchyUpdated: 'Hierarquia atualizada com sucesso!',
     },
 
     common: {
@@ -470,6 +480,8 @@ export const translations: Record<Language, Translations> = {
       low: 'Low',
       todo: 'To do',
       inProgress: 'In progress',
+      inReview: 'In review',
+      blocked: 'Blocked',
       done: 'Done',
     },
 
@@ -512,6 +524,9 @@ export const translations: Record<Language, Translations> = {
       actionItemDeleteFailed: 'Failed to delete action item',
       deleteChecklistConfirm: 'Are you sure you want to delete this checklist?',
       deleteActionItemConfirm: 'Are you sure you want to delete this action item?',
+      hierarchy: 'Hierarchy',
+      viewHierarchy: 'View hierarchy',
+      hierarchyUpdated: 'Hierarchy updated successfully!',
     },
 
     common: {

@@ -4,13 +4,17 @@ import { useToast } from '../contexts/ToastContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { taskService } from '../services/tasks';
 import { projectService } from '../services/projects';
+import { hierarchyService } from '../services/hierarchy';
 import LoadingSpinner from '../components/LoadingSpinner';
+import TaskHierarchy from '../components/TaskHierarchy';
 import type { TaskCreate, TaskStatus, TaskPriority } from '../types/api';
 
 export const Tasks: React.FC = () => {
   const { showToast } = useToast();
   const { t } = useLanguage();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [selectedTaskId, setSelectedTaskId] = useState<number | null>(null);
+  const [showHierarchy, setShowHierarchy] = useState(false);
   const [statusFilter, setStatusFilter] = useState<TaskStatus | ''>('');
   const [projectFilter, setProjectFilter] = useState<number | ''>('');
   const [formData, setFormData] = useState<TaskCreate>({
@@ -37,6 +41,13 @@ export const Tasks: React.FC = () => {
   const { data: projects } = useQuery({
     queryKey: ['projects'],
     queryFn: () => projectService.getProjects()
+  });
+
+  // Fetch task hierarchy when selectedTaskId changes
+  const { data: taskHierarchy, isLoading: hierarchyLoading } = useQuery({
+    queryKey: ['task-hierarchy', selectedTaskId],
+    queryFn: () => selectedTaskId ? hierarchyService.getTaskHierarchy(selectedTaskId) : null,
+    enabled: !!selectedTaskId && showHierarchy
   });
 
   const createMutation = useMutation({
@@ -113,6 +124,16 @@ export const Tasks: React.FC = () => {
     }
   };
 
+  const handleToggleHierarchy = (taskId: number) => {
+    if (selectedTaskId === taskId && showHierarchy) {
+      setShowHierarchy(false);
+      setSelectedTaskId(null);
+    } else {
+      setSelectedTaskId(taskId);
+      setShowHierarchy(true);
+    }
+  };
+
   const getStatusBadgeColor = (status: TaskStatus) => {
     switch (status) {
       case 'todo':
@@ -185,9 +206,9 @@ export const Tasks: React.FC = () => {
               <option value="">Todos os status</option>
               <option value="todo">{t.tasks.todo}</option>
               <option value="in_progress">{t.tasks.inProgress}</option>
-              <option value="in_review">Em revisão</option>
+              <option value="in_review">{t.tasks.inReview}</option>
               <option value="done">{t.tasks.done}</option>
-              <option value="blocked">Bloqueada</option>
+              <option value="blocked">{t.tasks.blocked}</option>
             </select>
           </div>
           <div>
@@ -255,6 +276,37 @@ export const Tasks: React.FC = () => {
                         {task.description && (
                           <p className="text-sm text-gray-500 mt-1">{task.description}</p>
                         )}
+                        {/* Progress bar for tasks with hierarchy */}
+                        {taskHierarchy && selectedTaskId === task.id && taskHierarchy.checklists && taskHierarchy.checklists.length > 0 && (
+                          <div className="mt-3">
+                            <div className="flex items-center justify-between text-xs text-gray-600 mb-1">
+                              <span>Progresso da hierarquia</span>
+                              <span>
+                                {Math.round(
+                                  (taskHierarchy.checklists.reduce((total, cl) => 
+                                    total + cl.action_items.filter(item => item.is_completed).length, 0
+                                  ) / Math.max(1, taskHierarchy.checklists.reduce((total, cl) => 
+                                    total + cl.action_items.length, 0
+                                  ))) * 100
+                                )}%
+                              </span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-1.5">
+                              <div
+                                className="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
+                                style={{
+                                  width: `${Math.round(
+                                    (taskHierarchy.checklists.reduce((total, cl) => 
+                                      total + cl.action_items.filter(item => item.is_completed).length, 0
+                                    ) / Math.max(1, taskHierarchy.checklists.reduce((total, cl) => 
+                                      total + cl.action_items.length, 0
+                                    ))) * 100
+                                  )}%`
+                                }}
+                              />
+                            </div>
+                          </div>
+                        )}
                         <div className="mt-2 flex items-center space-x-2">
                           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadgeColor(task.status)}`}>
                             {task.status.replace('_', ' ')}
@@ -267,10 +319,43 @@ export const Tasks: React.FC = () => {
                               {projects.items.find(p => p.id === task.project_id)?.name}
                             </span>
                           )}
+                          {/* Indicador de hierarquia */}
+                          {taskHierarchy && selectedTaskId === task.id && (
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                              <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                              </svg>
+                              {taskHierarchy.checklists?.length || 0} listas
+                              {taskHierarchy.checklists && taskHierarchy.checklists.length > 0 && (
+                                <span className="ml-1">
+                                  • {taskHierarchy.checklists.reduce((total, cl) => total + cl.action_items.length, 0)} itens
+                                </span>
+                              )}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => handleToggleHierarchy(task.id)}
+                        className={`inline-flex items-center px-3 py-1 border text-xs font-medium rounded transition-colors ${
+                          selectedTaskId === task.id && showHierarchy 
+                            ? 'border-blue-500 text-blue-700 bg-blue-50 hover:bg-blue-100' 
+                            : 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50'
+                        }`}
+                        title={showHierarchy && selectedTaskId === task.id ? 'Ocultar hierarquia' : t.hierarchy.viewHierarchy}
+                      >
+                        <svg className={`w-4 h-4 mr-1 transition-transform ${showHierarchy && selectedTaskId === task.id ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                        {t.hierarchy.hierarchy}
+                        {selectedTaskId === task.id && showHierarchy && (
+                          <span className="ml-1 bg-blue-600 text-white text-xs px-1.5 py-0.5 rounded-full">
+                            {taskHierarchy?.checklists?.length || 0}
+                          </span>
+                        )}
+                      </button>
                       <select
                         value={task.status}
                         onChange={(e) => handleStatusChange(task.id, e.target.value as TaskStatus)}
@@ -278,9 +363,9 @@ export const Tasks: React.FC = () => {
                       >
                         <option value="todo">{t.tasks.todo}</option>
                         <option value="in_progress">{t.tasks.inProgress}</option>
-                        <option value="in_review">Em revisão</option>
+                        <option value="in_review">{t.tasks.inReview}</option>
                         <option value="done">{t.tasks.done}</option>
-                        <option value="blocked">Bloqueada</option>
+                        <option value="blocked">{t.tasks.blocked}</option>
                       </select>
                       <button
                         onClick={() => handleDeleteTask(task.id, task.title)}
@@ -298,6 +383,61 @@ export const Tasks: React.FC = () => {
                       </button>
                     </div>
                   </div>
+                  {/* Task Hierarchy Section */}
+                  {selectedTaskId === task.id && showHierarchy && (
+                    <div className="mt-4 pt-4 border-t border-gray-200">
+                      <div className="bg-gray-50 rounded-lg p-4">
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="flex items-center space-x-2">
+                            <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                            </svg>
+                            <h4 className="text-lg font-medium text-gray-900">{t.hierarchy.taskHierarchy}</h4>
+                            {taskHierarchy?.checklists && taskHierarchy.checklists.length > 0 && (
+                              <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
+                                {taskHierarchy.checklists.length} {taskHierarchy.checklists.length === 1 ? 'lista' : 'listas'}
+                              </span>
+                            )}
+                          </div>
+                          <button
+                            onClick={() => {
+                              setShowHierarchy(false);
+                              setSelectedTaskId(null);
+                            }}
+                            className="text-gray-400 hover:text-gray-600 p-1 rounded-md hover:bg-gray-200"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </div>
+                        
+                        {hierarchyLoading ? (
+                          <div className="flex items-center justify-center py-8">
+                            <LoadingSpinner />
+                            <span className="ml-2 text-gray-600">Carregando hierarquia...</span>
+                          </div>
+                        ) : taskHierarchy ? (
+                          <TaskHierarchy 
+                            task={taskHierarchy}
+                            onUpdate={() => {
+                              queryClient.invalidateQueries({ queryKey: ['tasks'] });
+                              queryClient.invalidateQueries({ queryKey: ['task-hierarchy', selectedTaskId] });
+                              showToast(t.hierarchy.hierarchyUpdated, 'success');
+                            }}
+                          />
+                        ) : (
+                          <div className="text-center py-8">
+                            <svg className="w-12 h-12 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                            </svg>
+                            <p className="text-gray-500 text-sm">{t.hierarchy.noChecklists}</p>
+                            <p className="text-gray-400 text-xs mt-1">{t.hierarchy.noChecklistsDescription}</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               </li>
             ))}
@@ -390,9 +530,9 @@ export const Tasks: React.FC = () => {
                     >
                       <option value="todo">{t.tasks.todo}</option>
                       <option value="in_progress">{t.tasks.inProgress}</option>
-                      <option value="in_review">Em revisão</option>
+                      <option value="in_review">{t.tasks.inReview}</option>
                       <option value="done">{t.tasks.done}</option>
-                      <option value="blocked">Bloqueada</option>
+                      <option value="blocked">{t.tasks.blocked}</option>
                     </select>
                   </div>
 
