@@ -9,7 +9,7 @@ from datetime import datetime
 
 from app.config import settings
 from app.database import create_tables
-from app.api import auth, users, projects
+from app.api import auth, users, projects, tasks
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -33,6 +33,7 @@ app.add_middleware(
 app.include_router(auth.router, prefix="/api/v1")
 app.include_router(users.router, prefix="/api/v1")
 app.include_router(projects.router, prefix="/api/v1")
+app.include_router(tasks.router, prefix="/api/v1")
 
 @app.on_event("startup")
 async def startup_event():

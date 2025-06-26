@@ -96,6 +96,7 @@ class TaskUpdate(BaseModel):
     priority: Optional[TaskPriority] = None
     assignee_id: Optional[int] = None
     due_date: Optional[datetime] = None
+    completed_at: Optional[datetime] = None
 
 class TaskResponse(TaskBase):
     id: int
