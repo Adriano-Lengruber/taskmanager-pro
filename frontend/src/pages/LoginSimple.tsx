@@ -1,17 +1,17 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuthSimple } from '../contexts/AuthContextSimple';
 import { useToast } from '../contexts/ToastContext';
 import LoadingSpinner from '../components/LoadingSpinner';
 import type { UserLogin } from '../types/api';
 
-const Login: React.FC = () => {
-  const { login } = useAuth();
+const LoginSimple: React.FC = () => {
+  const { login } = useAuthSimple();
   const navigate = useNavigate();
   const { showToast } = useToast();
   const [formData, setFormData] = useState<UserLogin>({
-    username: '',
-    password: ''
+    username: 'testuser',
+    password: 'testpass123'
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -29,27 +29,26 @@ const Login: React.FC = () => {
     setIsLoading(true);
     setError('');
 
-    console.log('Login: Form submitted', formData.username);
+    console.log('LoginSimple: Form submitted', formData.username);
 
     try {
-      console.log('Login: Calling login function...');
+      console.log('LoginSimple: Calling login function...');
       await login(formData);
-      console.log('Login: Success! Redirecting to dashboard...');
+      console.log('LoginSimple: Success! Redirecting to dashboard...');
       showToast('Login successful! Welcome back.', 'success');
-      
-      // Redirecionamento será automático pelo ProtectedRoute
-      // mas vamos garantir com navigate também
-      setTimeout(() => {
-        navigate('/dashboard');
-      }, 100);
+      navigate('/dashboard');
     } catch (err: any) {
-      console.error('Login: Error occurred:', err);
+      console.error('LoginSimple: Error occurred:', err);
       const errorMessage = err.response?.data?.detail || err.message || 'Login failed. Please try again.';
       setError(errorMessage);
       showToast(errorMessage, 'error');
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleGoTest = () => {
+    navigate('/test');
   };
 
   return (
@@ -132,7 +131,7 @@ const Login: React.FC = () => {
             </button>
           </div>
 
-          <div className="text-center">
+          <div className="text-center space-y-2">
             <p className="text-sm text-gray-600">
               Don't have an account?{' '}
               <Link
@@ -142,6 +141,13 @@ const Login: React.FC = () => {
                 Sign up here
               </Link>
             </p>
+            <button
+              type="button"
+              onClick={handleGoTest}
+              className="text-sm text-gray-500 hover:text-gray-700 underline"
+            >
+              Go to Test Page
+            </button>
           </div>
         </form>
       </div>
@@ -149,4 +155,4 @@ const Login: React.FC = () => {
   );
 };
 
-export default Login;
+export default LoginSimple;

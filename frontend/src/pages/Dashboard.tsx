@@ -1,12 +1,24 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useToast } from '../contexts/ToastContext';
 import { taskService } from '../services/tasks';
 import { projectService } from '../services/projects';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 export const Dashboard: React.FC = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const { showToast } = useToast();
+
+  const handleLogout = () => {
+    console.log('Dashboard: Logout button clicked');
+    logout();
+    console.log('Dashboard: Logout completed, redirecting to login');
+    showToast('Logged out successfully', 'success');
+    navigate('/login', { replace: true });
+  };
 
   const { data: tasks, isLoading: tasksLoading } = useQuery({
     queryKey: ['tasks', { skip: 0, limit: 5 }],
@@ -60,6 +72,20 @@ export const Dashboard: React.FC = () => {
 
   return (
     <div className="space-y-6">
+      {/* Header with Logout */}
+      <div className="bg-white shadow rounded-lg p-4 flex justify-between items-center">
+        <div>
+          <h1 className="text-xl font-bold text-gray-900">Dashboard</h1>
+          <p className="text-sm text-gray-600">Welcome, {user?.full_name || user?.username}!</p>
+        </div>
+        <button
+          onClick={handleLogout}
+          className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+        >
+          Logout
+        </button>
+      </div>
+
       {/* Welcome Header */}
       <div className="bg-white shadow rounded-lg p-6">
         <h1 className="text-2xl font-bold text-gray-900">

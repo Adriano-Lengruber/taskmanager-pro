@@ -2,14 +2,20 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { ToastProvider } from './contexts/ToastContext';
+import { SimpleToastProvider } from './contexts/SimpleToastContext';
 
 // Components (to be created)
 import { Dashboard } from './pages/Dashboard';
 import Login from './pages/Login';
 import { Register } from './pages/Register';
+import { RegisterSimple } from './pages/RegisterSimple';
+import { RegisterDebug } from './pages/RegisterDebug';
+import { RegisterSimpleToastTest } from './pages/RegisterSimpleToastTest';
 import { Projects } from './pages/Projects';
 import ProjectDetail from './pages/ProjectDetail';
 import { Tasks } from './pages/Tasks';
+import TestPage from './pages/TestPage';
 import Layout from './components/Layout';
 import LoadingSpinner from './components/LoadingSpinner';
 
@@ -57,14 +63,16 @@ function AppRoutes() {
   return (
     <Routes>
       {/* Public Routes */}
+      <Route path="/test" element={<TestPage />} />
       <Route path="/login" element={
         <PublicRoute>
           <Login />
         </PublicRoute>
       } />
-      <Route path="/register" element={
+      <Route path="/register" element={<RegisterSimpleToastTest />} />
+      <Route path="/register-simple" element={
         <PublicRoute>
-          <Register />
+          <RegisterSimple />
         </PublicRoute>
       } />
 
@@ -79,6 +87,7 @@ function AppRoutes() {
         <Route path="projects" element={<Projects />} />
         <Route path="projects/:id" element={<ProjectDetail />} />
         <Route path="tasks" element={<Tasks />} />
+        <Route path="test" element={<TestPage />} />
       </Route>
 
       {/* Catch all route */}
@@ -91,11 +100,13 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <Router>
-          <div className="min-h-screen bg-gray-50">
-            <AppRoutes />
-          </div>
-        </Router>
+        <SimpleToastProvider>
+          <Router>
+            <div className="min-h-screen bg-gray-50">
+              <AppRoutes />
+            </div>
+          </Router>
+        </SimpleToastProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

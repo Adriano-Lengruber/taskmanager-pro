@@ -24,7 +24,7 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
           rounded-full 
           border-2 
           border-gray-300 
-          border-t-primary-600
+          border-t-blue-600
         `}
       />
     </div>

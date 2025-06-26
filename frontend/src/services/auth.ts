@@ -28,9 +28,17 @@ export const authService = {
   // Register user
   async register(userData: UserRegister): Promise<APIResponse> {
     console.log('AuthService: Attempting registration for', userData.username);
-    const response = await apiClient.post<APIResponse>('/api/v1/auth/register', userData);
-    console.log('AuthService: Registration response received', response.data);
-    return response.data;
+    console.log('AuthService: Registration data:', userData);
+    
+    try {
+      const response = await apiClient.post<APIResponse>('/api/v1/auth/register', userData);
+      console.log('AuthService: Registration response received', response.data);
+      return response.data;
+    } catch (error: any) {
+      console.error('AuthService: Registration error', error);
+      console.error('AuthService: Registration error response', error.response);
+      throw error;
+    }
   },
 
   // Get current user info
