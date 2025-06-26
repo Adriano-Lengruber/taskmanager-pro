@@ -121,3 +121,18 @@ class PaginatedResponse(BaseModel):
     page: int
     per_page: int
     pages: int
+
+# Authentication Schemas
+class Token(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+
+class TokenData(BaseModel):
+    username: Optional[str] = None
+
+class UserLogin(BaseModel):
+    username: str = Field(..., min_length=3)
+    password: str = Field(..., min_length=8)
+
+class UserRegister(UserCreate):
+    confirm_password: str = Field(..., min_length=8)

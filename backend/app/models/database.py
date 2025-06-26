@@ -1,35 +1,10 @@
 """
 Database models for TaskManager Pro
 """
-from sqlalchemy import Column, Integer, String, Text, DateTime, Boolean, ForeignKey, Enum
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, Integer, String, Text, DateTime, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
+from app.database import Base
 from datetime import datetime
-import enum
-
-Base = declarative_base()
-
-class UserRole(enum.Enum):
-    """User roles in the system"""
-    ADMIN = "admin"
-    MANAGER = "manager"
-    DEVELOPER = "developer"
-    VIEWER = "viewer"
-
-class TaskStatus(enum.Enum):
-    """Task status options"""
-    TODO = "todo"
-    IN_PROGRESS = "in_progress"
-    IN_REVIEW = "in_review"
-    DONE = "done"
-    BLOCKED = "blocked"
-
-class TaskPriority(enum.Enum):
-    """Task priority levels"""
-    LOW = "low"
-    MEDIUM = "medium"
-    HIGH = "high"
-    URGENT = "urgent"
 
 class User(Base):
     """User model"""
@@ -39,8 +14,9 @@ class User(Base):
     username = Column(String(50), unique=True, index=True, nullable=False)
     email = Column(String(100), unique=True, index=True, nullable=False)
     full_name = Column(String(100), nullable=False)
+    hashed_password = Column(String(255), nullable=False)
     avatar_url = Column(String(255))
-    role = Column(Enum(UserRole), default=UserRole.DEVELOPER)
+    role = Column(String(20), default="developer")  # admin, manager, developer, viewer
     is_active = Column(Boolean, default=True)
     is_verified = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -74,8 +50,8 @@ class Task(Base):
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String(200), nullable=False, index=True)
     description = Column(Text)
-    status = Column(Enum(TaskStatus), default=TaskStatus.TODO)
-    priority = Column(Enum(TaskPriority), default=TaskPriority.MEDIUM)
+    status = Column(String(20), default="todo")  # todo, in_progress, in_review, done, blocked
+    priority = Column(String(20), default="medium")  # low, medium, high, urgent
     
     # Foreign Keys
     project_id = Column(Integer, ForeignKey("projects.id"))
@@ -91,5 +67,5 @@ class Task(Base):
     # Relationships
     project = relationship("Project", back_populates="tasks")
     assignee = relationship("User", back_populates="assigned_tasks")
-    parent_task = relationship("Task", remote_side=[id])
-    subtasks = relationship("Task")
+    parent_task = relationship("Task", remote_side=[id], back_populates="subtasks")
+    subtasks = relationship("Task", back_populates="parent_task")

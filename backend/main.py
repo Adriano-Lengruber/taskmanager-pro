@@ -7,6 +7,10 @@ from fastapi.responses import JSONResponse
 import uvicorn
 from datetime import datetime
 
+from app.config import settings
+from app.database import create_tables
+from app.api import auth, users, projects
+
 # Initialize FastAPI app
 app = FastAPI(
     title="TaskManager Pro API",
@@ -19,11 +23,21 @@ app = FastAPI(
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure this properly in production
+    allow_origins=settings.backend_cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include API routers
+app.include_router(auth.router, prefix="/api/v1")
+app.include_router(users.router, prefix="/api/v1")
+app.include_router(projects.router, prefix="/api/v1")
+
+@app.on_event("startup")
+async def startup_event():
+    """Initialize database tables on startup"""
+    create_tables()
 
 @app.get("/")
 async def root():
