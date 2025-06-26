@@ -2,7 +2,8 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
-import { SimpleToastProvider } from './contexts/SimpleToastContext';
+import { ToastProvider } from './contexts/ToastContext';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // Components (to be created)
 import { Dashboard } from './pages/Dashboard';
@@ -95,17 +96,19 @@ function AppRoutes() {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <SimpleToastProvider>
-          <Router>
-            <div className="min-h-screen bg-gray-50">
-              <AppRoutes />
-            </div>
-          </Router>
-        </SimpleToastProvider>
-      </AuthProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <ToastProvider>
+            <Router>
+              <div className="min-h-screen bg-gray-50">
+                <AppRoutes />
+              </div>
+            </Router>
+          </ToastProvider>
+        </AuthProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 

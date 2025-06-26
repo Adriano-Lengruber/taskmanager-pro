@@ -46,7 +46,21 @@ const Login: React.FC = () => {
       }, 100);
     } catch (err: any) {
       console.error('Login: Error occurred:', err);
-      const errorMessage = err.response?.data?.detail || err.message || t.auth.invalidCredentials;
+      
+      // Tratar diferentes tipos de erro
+      let errorMessage = t.auth.invalidCredentials;
+      
+      try {
+        if (err.response?.data?.detail) {
+          errorMessage = err.response.data.detail;
+        } else if (err.message) {
+          errorMessage = err.message;
+        }
+      } catch (parseError) {
+        console.error('Login: Error parsing error message:', parseError);
+        errorMessage = 'Erro de conexão. Verifique sua conexão com a internet.';
+      }
+      
       setError(errorMessage);
       showToast(errorMessage, 'error');
     } finally {
