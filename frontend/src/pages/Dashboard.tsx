@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { taskService } from '../services/tasks';
 import { projectService } from '../services/projects';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -11,12 +12,13 @@ export const Dashboard: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const { showToast } = useToast();
+  const { t } = useLanguage();
 
   const handleLogout = () => {
     console.log('Dashboard: Logout button clicked');
     logout();
     console.log('Dashboard: Logout completed, redirecting to login');
-    showToast('Logged out successfully', 'success');
+    showToast(t.auth.logoutSuccess, 'success');
     navigate('/login', { replace: true });
   };
 

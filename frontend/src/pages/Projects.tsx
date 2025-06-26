@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import { projectService } from '../services/projects';
 import LoadingSpinner from '../components/LoadingSpinner';
 import type { ProjectCreate } from '../types/api';
@@ -10,6 +11,7 @@ import type { ProjectCreate } from '../types/api';
 export const Projects: React.FC = () => {
   const { user } = useAuth();
   const { showToast } = useToast();
+  const { t } = useLanguage();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [formData, setFormData] = useState<ProjectCreate>({
     name: '',
@@ -32,12 +34,12 @@ export const Projects: React.FC = () => {
       setIsCreateModalOpen(false);
       setFormData({ name: '', description: '', key: '' });
       setError('');
-      showToast(`Project "${newProject.name}" created successfully!`, 'success');
+      showToast(`${t.projects.projectCreated.replace('!', '')} "${newProject.name}"!`, 'success');
     },
     onError: (error: any) => {
-      const errorMessage = error.response?.data?.detail || 'Failed to create project';
+      const errorMessage = error.response?.data?.detail || t.projects.createFailed;
       setError(errorMessage);
-      showToast(`Failed to create project: ${errorMessage}`, 'error');
+      showToast(`${t.projects.createFailed}: ${errorMessage}`, 'error');
     }
   });
 
@@ -45,16 +47,16 @@ export const Projects: React.FC = () => {
     mutationFn: projectService.deleteProject,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
-      showToast('Project deleted successfully!', 'success');
+      showToast(t.projects.projectDeleted, 'success');
     },
     onError: (error: any) => {
-      const errorMessage = error.response?.data?.detail || 'Failed to delete project';
-      showToast(`Failed to delete project: ${errorMessage}`, 'error');
+      const errorMessage = error.response?.data?.detail || t.projects.deleteFailed;
+      showToast(`${t.projects.deleteFailed}: ${errorMessage}`, 'error');
     }
   });
 
   const handleDeleteProject = (projectId: number, projectName: string) => {
-    if (window.confirm(`Are you sure you want to delete "${projectName}"? This action cannot be undone.`)) {
+    if (window.confirm(`${t.projects.deleteConfirmation} "${projectName}"? ${t.projects.deleteWarning}`)) {
       deleteMutation.mutate(projectId);
     }
   };
@@ -62,7 +64,7 @@ export const Projects: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name.trim() || !formData.key.trim()) {
-      setError('Name and key are required');
+      setError(`${t.projects.nameRequired} e ${t.projects.keyRequired.toLowerCase()}`);
       return;
     }
     createMutation.mutate(formData);
@@ -92,14 +94,14 @@ export const Projects: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Projects</h1>
-          <p className="text-gray-600 mt-1">Manage your projects and their settings</p>
+          <h1 className="text-2xl font-bold text-gray-900">{t.projects.title}</h1>
+          <p className="text-gray-600 mt-1">{t.projects.subtitle}</p>
         </div>
         <button
           onClick={() => setIsCreateModalOpen(true)}
           className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium"
         >
-          Create Project
+          {t.projects.createProject}
         </button>
       </div>
 
@@ -109,14 +111,14 @@ export const Projects: React.FC = () => {
           <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
           </svg>
-          <h3 className="mt-2 text-sm font-medium text-gray-900">No projects</h3>
-          <p className="mt-1 text-sm text-gray-500">Get started by creating a new project.</p>
+          <h3 className="mt-2 text-sm font-medium text-gray-900">{t.projects.noProjects}</h3>
+          <p className="mt-1 text-sm text-gray-500">{t.projects.noProjectsDescription}</p>
           <div className="mt-6">
             <button
               onClick={() => setIsCreateModalOpen(true)}
               className="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700"
             >
-              Create Project
+              {t.projects.createProject}
             </button>
           </div>
         </div>
@@ -148,13 +150,13 @@ export const Projects: React.FC = () => {
                     <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                       project.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
                     }`}>
-                      {project.is_active ? 'Active' : 'Inactive'}
+                      {project.is_active ? t.projects.active : t.projects.inactive}
                     </span>
                     <Link
                       to={`/projects/${project.id}`}
                       className="text-indigo-600 hover:text-indigo-900 text-sm font-medium"
                     >
-                      View Details
+                      {t.projects.view}
                     </Link>
                   </div>
                   <div className="mt-3 flex justify-end space-x-2">
@@ -166,14 +168,14 @@ export const Projects: React.FC = () => {
                       {deleteMutation.isPending ? (
                         <>
                           <LoadingSpinner size="sm" />
-                          <span className="ml-1">Deleting...</span>
+                          <span className="ml-1">{t.common.loading}</span>
                         </>
                       ) : (
                         <>
                           <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                           </svg>
-                          Delete
+                          {t.projects.delete}
                         </>
                       )}
                     </button>
@@ -191,7 +193,7 @@ export const Projects: React.FC = () => {
           <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
             <div className="mt-3">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-medium text-gray-900">Create New Project</h3>
+                <h3 className="text-lg font-medium text-gray-900">{t.projects.createProject}</h3>
                 <button
                   onClick={() => {
                     setIsCreateModalOpen(false);
@@ -215,7 +217,7 @@ export const Projects: React.FC = () => {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                    Project Name *
+                    {t.projects.projectName} *
                   </label>
                   <input
                     type="text"
@@ -225,13 +227,13 @@ export const Projects: React.FC = () => {
                     value={formData.name}
                     onChange={handleChange}
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                    placeholder="My Awesome Project"
+                    placeholder="Meu Projeto Incrível"
                   />
                 </div>
 
                 <div>
                   <label htmlFor="key" className="block text-sm font-medium text-gray-700">
-                    Project Key *
+                    {t.projects.projectKey} *
                   </label>
                   <input
                     type="text"
@@ -241,17 +243,17 @@ export const Projects: React.FC = () => {
                     value={formData.key}
                     onChange={handleChange}
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                    placeholder="MAP"
+                    placeholder="MPI"
                     maxLength={10}
                   />
                   <p className="mt-1 text-xs text-gray-500">
-                    Short identifier (max 10 characters)
+                    Identificador curto (máximo 10 caracteres)
                   </p>
                 </div>
 
                 <div>
                   <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-                    Description
+                    {t.projects.projectDescription}
                   </label>
                   <textarea
                     id="description"
@@ -260,7 +262,7 @@ export const Projects: React.FC = () => {
                     value={formData.description}
                     onChange={handleChange}
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                    placeholder="Project description..."
+                    placeholder="Descrição do projeto..."
                   />
                 </div>
 
@@ -274,7 +276,7 @@ export const Projects: React.FC = () => {
                     }}
                     className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
                   >
-                    Cancel
+                    {t.projects.cancel}
                   </button>
                   <button
                     type="submit"
@@ -284,10 +286,10 @@ export const Projects: React.FC = () => {
                     {createMutation.isPending ? (
                       <div className="flex items-center">
                         <LoadingSpinner size="sm" />
-                        <span className="ml-2">Creating...</span>
+                        <span className="ml-2">{t.common.loading}</span>
                       </div>
                     ) : (
-                      'Create Project'
+                      t.projects.createProject
                     )}
                   </button>
                 </div>

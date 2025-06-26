@@ -3,9 +3,11 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ToastProvider } from './contexts/ToastContext';
+import { LanguageProvider } from './contexts/LanguageContext';
 import LoadingSpinner from './components/LoadingSpinner';
 import { RegisterComplete } from './pages/RegisterComplete';
 import { Dashboard } from './pages/Dashboard';
+import { Projects } from './pages/Projects';
 import Login from './pages/Login';
 
 // Create React Query client
@@ -49,10 +51,11 @@ function App() {
   
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <ToastProvider>
-          <Router>
-            <div style={{ minHeight: '100vh', backgroundColor: '#f3f4f6' }}>            <Routes>
+      <LanguageProvider>
+        <AuthProvider>
+          <ToastProvider>
+            <Router>
+              <div style={{ minHeight: '100vh', backgroundColor: '#f3f4f6' }}>            <Routes>
               <Route 
                 path="/register" 
                 element={
@@ -78,6 +81,14 @@ function App() {
                 } 
               />              
               <Route 
+                path="/projects" 
+                element={
+                  <ProtectedRoute requireAuth={true}>
+                    <Projects />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
                 path="/" 
                 element={<Navigate to="/login" replace />} 
               />
@@ -90,6 +101,7 @@ function App() {
           </Router>
         </ToastProvider>
       </AuthProvider>
+    </LanguageProvider>
     </QueryClientProvider>
   );
 }

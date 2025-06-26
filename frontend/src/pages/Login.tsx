@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
+import { useLanguage } from '../contexts/LanguageContext';
 import LoadingSpinner from '../components/LoadingSpinner';
 import type { UserLogin } from '../types/api';
 
@@ -9,6 +10,7 @@ const Login: React.FC = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
   const { showToast } = useToast();
+  const { t } = useLanguage();
   const [formData, setFormData] = useState<UserLogin>({
     username: '',
     password: ''
@@ -35,7 +37,7 @@ const Login: React.FC = () => {
       console.log('Login: Calling login function...');
       await login(formData);
       console.log('Login: Success! Redirecting to dashboard...');
-      showToast('Login successful! Welcome back.', 'success');
+      showToast(t.auth.loginSuccess, 'success');
       
       // Redirecionamento será automático pelo ProtectedRoute
       // mas vamos garantir com navigate também
@@ -44,7 +46,7 @@ const Login: React.FC = () => {
       }, 100);
     } catch (err: any) {
       console.error('Login: Error occurred:', err);
-      const errorMessage = err.response?.data?.detail || err.message || 'Login failed. Please try again.';
+      const errorMessage = err.response?.data?.detail || err.message || t.auth.invalidCredentials;
       setError(errorMessage);
       showToast(errorMessage, 'error');
     } finally {
@@ -57,10 +59,10 @@ const Login: React.FC = () => {
       <div className="max-w-md w-full space-y-8">
         <div>
           <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
-            Welcome to TaskManager Pro
+            Bem-vindo ao TaskManager Pro
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Sign in to your account
+            Entre na sua conta
           </p>
         </div>
 
@@ -74,7 +76,7 @@ const Login: React.FC = () => {
           <div className="space-y-4">
             <div>
               <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-                Username
+                {t.auth.email}
               </label>
               <input
                 id="username"
@@ -88,13 +90,13 @@ const Login: React.FC = () => {
                   shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500
                   focus:border-blue-500
                 "
-                placeholder="Enter your username"
+                placeholder="Digite seu e-mail"
               />
             </div>
 
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
+                {t.auth.password}
               </label>
               <input
                 id="password"
@@ -108,7 +110,7 @@ const Login: React.FC = () => {
                   shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500
                   focus:border-blue-500
                 "
-                placeholder="Enter your password"
+                placeholder="Digite sua senha"
               />
             </div>
           </div>
@@ -127,19 +129,19 @@ const Login: React.FC = () => {
               {isLoading ? (
                 <LoadingSpinner size="sm" />
               ) : (
-                'Sign in'
+                t.auth.loginButton
               )}
             </button>
           </div>
 
           <div className="text-center">
             <p className="text-sm text-gray-600">
-              Don't have an account?{' '}
+              {t.auth.dontHaveAccount}{' '}
               <Link
                 to="/register"
                 className="font-medium text-blue-600 hover:text-blue-500"
               >
-                Sign up here
+                Cadastre-se aqui
               </Link>
             </p>
           </div>
