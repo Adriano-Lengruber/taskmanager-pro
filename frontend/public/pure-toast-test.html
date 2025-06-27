@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Toast Isolado - Sem React</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f3f4f6;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .button {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 10px;
+            font-size: 14px;
+        }
+        .button:hover {
+            background: #dc2626;
+        }
+        .logs {
+            background: #000;
+            color: #10b981;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        .warning {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            color: #92400e;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Teste Toast Isolado - Sem React</h1>
+        
+        <div class="warning">
+            <strong>⚠️ Teste Isolado:</strong> Esta página não usa React, Vue ou qualquer framework. 
+            É HTML puro + JavaScript para testar se o problema é relacionado ao React.
+        </div>
+
+        <div>
+            <h2>Testes de Toast</h2>
+            <button class="button" onclick="testHyperDebugToast()">🔍 Testar HyperDebugToast</button>
+            <button class="button" onclick="testBulletproofToast()">🛡️ Testar BulletproofToast</button>
+            <button class="button" onclick="testLoginErrorSimulation()">🔐 Simular Erro de Login</button>
+            <button class="button" onclick="testMultipleToasts()">🚀 Múltiplos Toasts</button>
+            <button class="button" onclick="clearLogs()">🧹 Limpar Logs</button>
+        </div>
+
+        <div id="logs" class="logs">
+            Aguardando testes...<br>
+        </div>
+    </div>
+
+    <script>
+        let logContainer = document.getElementById('logs');
+        
+        function addLog(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}`;
+            console.log('🧪 PURE-TEST:', logEntry);
+            logContainer.innerHTML += logEntry + '<br>';
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        function clearLogs() {
+            logContainer.innerHTML = 'Logs limpos...<br>';
+        }
+
+        // Carregar scripts do sistema de toast
+        function loadToastSystems() {
+            addLog('Carregando sistemas de toast...');
+            
+            // Simular carregamento dos sistemas (normalmente seria via import)
+            // Para este teste, vamos criar versões simplificadas
+            
+            // HyperDebugToast simplificado
+            window.hyperDebugToast = {
+                error: function(message) {
+                    addLog(`HyperDebugToast.error() chamado: "${message}"`);
+                    return createSimpleToast(message, 'error', 'hyper-debug');
+                },
+                success: function(message) {
+                    addLog(`HyperDebugToast.success() chamado: "${message}"`);
+                    return createSimpleToast(message, 'success', 'hyper-debug');
+                }
+            };
+
+            // BulletproofToast simplificado  
+            window.bulletproofToast = {
+                error: function(message) {
+                    addLog(`BulletproofToast.error() chamado: "${message}"`);
+                    return createSimpleToast(message, 'error', 'bulletproof');
+                },
+                success: function(message) {
+                    addLog(`BulletproofToast.success() chamado: "${message}"`);
+                    return createSimpleToast(message, 'success', 'bulletproof');
+                }
+            };
+
+            addLog('✅ Sistemas de toast carregados');
+        }
+
+        function createSimpleToast(message, type, system) {
+            const toastId = `toast-${system}-${Date.now()}-${Math.random()}`;
+            addLog(`Criando toast ${toastId}`);
+
+            // Criar container se não existir
+            let container = document.getElementById('toast-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'toast-container';
+                container.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    z-index: 999999;
+                    pointer-events: none;
+                `;
+                document.body.appendChild(container);
+                addLog('Container de toast criado');
+            }
+
+            // Criar toast
+            const toast = document.createElement('div');
+            toast.id = toastId;
+            toast.style.cssText = `
+                background: ${type === 'error' ? '#ef4444' : '#10b981'};
+                color: white;
+                padding: 16px 20px;
+                border-radius: 8px;
+                margin-bottom: 10px;
+                box-shadow: 0 8px 25px rgba(0,0,0,0.25);
+                font-size: 14px;
+                font-weight: 500;
+                max-width: 400px;
+                word-wrap: break-word;
+                pointer-events: auto;
+                cursor: pointer;
+                border-left: 4px solid ${type === 'error' ? '#dc2626' : '#059669'};
+            `;
+
+            const icon = type === 'error' ? '❌' : '✅';
+            toast.innerHTML = `
+                <div style="display: flex; align-items: flex-start; gap: 10px;">
+                    <span style="font-size: 16px; flex-shrink: 0;">${icon}</span>
+                    <span style="flex: 1;">${message}</span>
+                    <span style="font-size: 10px; opacity: 0.7; margin-left: auto;">[${system}]</span>
+                </div>
+            `;
+
+            container.appendChild(toast);
+            addLog(`Toast ${toastId} adicionado ao DOM`);
+
+            // Verificar se realmente foi adicionado
+            setTimeout(() => {
+                const check = document.getElementById(toastId);
+                addLog(`Verificação: Toast ${toastId} existe no DOM? ${check ? 'SIM' : 'NÃO'}`);
+                
+                if (!check) {
+                    addLog(`❌ PROBLEMA: Toast ${toastId} não encontrado após criação!`);
+                }
+            }, 10);
+
+            // Auto-remoção
+            const duration = type === 'error' ? 8000 : 4000;
+            setTimeout(() => {
+                addLog(`Removendo toast ${toastId} após ${duration}ms`);
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                        addLog(`Toast ${toastId} removido do DOM`);
+                    }
+                }, 300);
+            }, duration);
+
+            // Clique para fechar
+            toast.addEventListener('click', () => {
+                addLog(`Toast ${toastId} clicado para fechar`);
+                toast.style.opacity = '0';
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                        addLog(`Toast ${toastId} removido por clique`);
+                    }
+                }, 300);
+            });
+
+            return toastId;
+        }
+
+        function testHyperDebugToast() {
+            addLog('=== Testando HyperDebugToast ===');
+            window.hyperDebugToast.error('Este é um teste de erro do HyperDebugToast - deve ficar visível!');
+        }
+
+        function testBulletproofToast() {
+            addLog('=== Testando BulletproofToast ===');
+            window.bulletproofToast.error('Este é um teste de erro do BulletproofToast - deve ficar visível!');
+        }
+
+        async function testLoginErrorSimulation() {
+            addLog('=== Simulando Erro de Login ===');
+            
+            try {
+                // Simular requisição HTTP que falha
+                addLog('Fazendo requisição de login...');
+                
+                const response = await fetch('http://localhost:8000/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: 'invalid_user_' + Math.random(),
+                        password: 'wrong_password_' + Math.random()
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                addLog('❌ ERRO: Login deveria ter falhado');
+            } catch (error) {
+                addLog(`✅ Login falhou como esperado: ${error.message}`);
+                
+                // Simular exatamente o que acontece no Login.tsx
+                const errorMessage = 'Credenciais inválidas. Verifique seu usuário e senha.';
+                addLog(`Exibindo toast de erro: "${errorMessage}"`);
+                
+                // Testar ambos os sistemas
+                window.hyperDebugToast.error(errorMessage);
+                window.bulletproofToast.error('BULLETPROOF: ' + errorMessage);
+            }
+        }
+
+        function testMultipleToasts() {
+            addLog('=== Testando Múltiplos Toasts ===');
+            
+            window.hyperDebugToast.error('Primeiro toast de erro');
+            setTimeout(() => window.hyperDebugToast.error('Segundo toast de erro'), 500);
+            setTimeout(() => window.bulletproofToast.error('Terceiro toast (bulletproof)'), 1000);
+            setTimeout(() => window.hyperDebugToast.success('Toast de sucesso'), 1500);
+        }
+
+        // Inicializar quando a página carregar
+        window.addEventListener('DOMContentLoaded', () => {
+            addLog('🚀 Página carregada - Teste HTML puro sem React');
+            loadToastSystems();
+            addLog('Pronto para testes! Clique nos botões acima.');
+        });
+    </script>
+</body>
+</html>
