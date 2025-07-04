@@ -49,14 +49,70 @@ Criar uma plataforma modular e extensível que combine a usabilidade do ClickUp,
 
 ## 🛠️ Configuração do Desenvolvimento
 
-### Ambiente Python
-- Python 3.13.3 configurado com venv
-- Ambiente virtual ativo em `.venv/`
+### Pré-requisitos
+- Python 3.12+ 
+- Node.js 18+
+- npm ou yarn
 
-### Controle de Versão
-- Git configurado com usuário: Adriano-Lengruber
-- Email: adrianolengruber@hotmail.com
-- Repositório inicializado
+### 🚀 Início Rápido
+
+#### 1. **Setup Automático** (Recomendado)
+```bash
+# Executar setup completo
+./scripts/setup-dev.sh
+
+# Iniciar ambiente de desenvolvimento
+./scripts/start-dev.sh
+```
+
+#### 2. **Setup Manual**
+
+##### Backend (FastAPI)
+```bash
+# Criar ambiente virtual
+python3 -m venv .venv
+source .venv/bin/activate
+
+# Instalar dependências
+pip install -r requirements.txt
+
+# Configurar environment
+cp backend/.env.example backend/.env
+
+# Iniciar servidor
+cd backend && python main.py
+```
+
+##### Frontend (React + Vite)
+```bash
+# Instalar dependências
+cd frontend && npm install
+
+# Configurar environment
+cp .env.example .env
+
+# Iniciar servidor de desenvolvimento
+npm run dev
+```
+
+### 📡 URLs do Ambiente
+
+- **Frontend**: http://localhost:5173
+- **Backend API**: http://localhost:8000
+- **API Docs (Swagger)**: http://localhost:8000/api/docs
+- **API Redoc**: http://localhost:8000/api/redoc
+
+### 🧪 Testando a API
+```bash
+# Health check
+curl http://localhost:8000/api/health
+
+# Informações da API
+curl http://localhost:8000/api/v1/info
+
+# Listar usuários (requer autenticação)
+curl http://localhost:8000/api/v1/users
+```
 
 ## 📋 Roadmap de Desenvolvimento
 

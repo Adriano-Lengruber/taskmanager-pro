@@ -1,6 +1,7 @@
 """
 TaskManager Pro - Main Application Entry Point
 """
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -11,19 +12,30 @@ from app.config import settings
 from app.database import create_tables
 from app.api import auth, users, projects, tasks, project_members, hierarchy
 
+# Lifespan event handler
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Initialize and cleanup application"""
+    # Startup
+    create_tables()
+    yield
+    # Shutdown (cleanup if needed)
+    pass
+
 # Initialize FastAPI app
 app = FastAPI(
     title="TaskManager Pro API",
     description="🚀 O melhor gerenciador de projetos e tarefas - API Backend",
     version="1.0.0",
     docs_url="/api/docs",
-    redoc_url="/api/redoc"
+    redoc_url="/api/redoc",
+    lifespan=lifespan
 )
 
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins for development
+    allow_origins=settings.cors_origins,  # Use configured origins
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
@@ -35,11 +47,6 @@ app.include_router(users.router, prefix="/api/v1")
 app.include_router(projects.router, prefix="/api/v1")
 app.include_router(tasks.router, prefix="/api/v1")
 app.include_router(project_members.router, prefix="/api/v1")
-
-@app.on_event("startup")
-async def startup_event():
-    """Initialize database tables on startup"""
-    create_tables()
 
 @app.get("/")
 async def root():

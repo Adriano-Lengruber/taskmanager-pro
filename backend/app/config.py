@@ -27,11 +27,21 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 30
     
     # CORS
-    backend_cors_origins: list = ["*"]  # Allow all origins for debugging
+    backend_cors_origins: str = "http://localhost:3000,http://localhost:5173"  # Development origins
+    
+    @property
+    def cors_origins(self) -> list:
+        """Convert CORS origins string to list"""
+        if isinstance(self.backend_cors_origins, str):
+            return [origin.strip() for origin in self.backend_cors_origins.split(",")]
+        return self.backend_cors_origins
     
     # External APIs
     openai_api_key: Optional[str] = None
     slack_webhook_url: Optional[str] = None
+    
+    # Logging
+    log_level: str = "INFO"
     
     class Config:
         env_file = ".env"
