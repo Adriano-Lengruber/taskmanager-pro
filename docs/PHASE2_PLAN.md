@@ -18,14 +18,14 @@ Implementar e melhorar as funcionalidades principais do sistema, focando na expe
   - [x] Buscar projeto ✅
   - [x] Editar projeto ✅
   - [x] Deletar projeto ✅
-  - [ ] Gerenciar membros
+  - [x] Gerenciar membros ✅
 
 - [x] **Testar CRUD de Tarefas**
   - [x] Criar tarefas ✅
   - [x] Listar tarefas ✅
   - [x] Editar tarefas ✅
   - [x] Deletar tarefas ✅
-  - [ ] Atribuir responsáveis
+  - [x] Atribuir responsáveis ✅
 
 ### **2.2 Melhorias de UI/UX** (2-3 dias)
 - [ ] **Dashboard Moderno**
